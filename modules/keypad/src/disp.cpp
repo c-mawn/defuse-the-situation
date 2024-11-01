@@ -43,6 +43,7 @@ Adafruit_SH1106G display = Adafruit_SH1106G(128, 64,OLED_MOSI, OLED_CLK, OLED_DC
 
 #define LOGO16_GLCD_HEIGHT 16
 #define LOGO16_GLCD_WIDTH  16
+/*
 static const unsigned char PROGMEM logo16_glcd_bmp[] =
 { B00000000, B11000000,
   B00000001, B11000000,
@@ -61,6 +62,13 @@ static const unsigned char PROGMEM logo16_glcd_bmp[] =
   B01110000, B01110000,
   B00000000, B00110000
 };
+*/
+
+static const unsigned char logo16_glcd_bmp [] PROGMEM = {
+	// '1, 16x16px
+	0x01, 0x80, 0x07, 0xe0, 0x0e, 0x70, 0x1c, 0x38, 0x18, 0x18, 0x30, 0x0c, 0x30, 0x0c, 0x30, 0x0c, 
+	0x18, 0x18, 0x1c, 0x38, 0x0e, 0x70, 0x07, 0xe0, 0x03, 0xc0, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80
+};
 
 const int ROW_NUM    = 4; // four rows
 const int COLUMN_NUM = 4; // four columns
@@ -76,6 +84,46 @@ byte pin_rows[ROW_NUM] = {11, 12, 13, 6};      // connect to the row pinouts of 
 byte pin_column[COLUMN_NUM] = {4, 3, 2, 1}; // connect to the column pinouts of the keypad
 
 Keypad keypad = Keypad(makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COLUMN_NUM );
+
+void testdrawbitmap(const uint8_t *bitmap, uint8_t w, uint8_t h) {
+  uint8_t icons[NUMFLAKES][3];
+
+  // initialize
+  for (uint8_t f = 0; f < NUMFLAKES; f++) {
+    icons[f][XPOS] = random(display.width());
+    icons[f][YPOS] = 0;
+    icons[f][DELTAY] = random(5) + 1;
+
+    Serial.print("x: ");
+    Serial.print(icons[f][XPOS], DEC);
+    Serial.print(" y: ");
+    Serial.print(icons[f][YPOS], DEC);
+    Serial.print(" dy: ");
+    Serial.println(icons[f][DELTAY], DEC);
+  }
+
+  while (1) {
+    // draw each icon
+    for (uint8_t f = 0; f < NUMFLAKES; f++) {
+      display.drawBitmap(icons[f][XPOS], icons[f][YPOS], bitmap, w, h, SH110X_WHITE);
+    }
+    display.display();
+    delay(200);
+
+    // then erase it + move it
+    for (uint8_t f = 0; f < NUMFLAKES; f++) {
+      display.drawBitmap(icons[f][XPOS], icons[f][YPOS], bitmap, w, h, SH110X_BLACK);
+      // move it
+      icons[f][YPOS] += icons[f][DELTAY];
+      // if its gone, reinit
+      if (icons[f][YPOS] > display.height()) {
+        icons[f][XPOS] = random(display.width());
+        icons[f][YPOS] = 0;
+        icons[f][DELTAY] = random(5) + 1;
+      }
+    }
+  }
+}
 
 void setup()   {
   Serial.begin(9600); delay(500);
@@ -174,7 +222,7 @@ void setup()   {
   // // miniature bitmap display
   // display.drawBitmap(30, 16,  logo16_glcd_bmp, 16, 16, 1);
   // display.display();
-  // delay(1);
+  // delay(5000);
 
   // // invert the display
   // display.invertDisplay(true);
@@ -184,7 +232,7 @@ void setup()   {
   // display.clearDisplay();
 
   // // draw a bitmap icon and 'animate' movement
-  // testdrawbitmap(logo16_glcd_bmp, LOGO16_GLCD_HEIGHT, LOGO16_GLCD_WIDTH);
+  testdrawbitmap(logo16_glcd_bmp, LOGO16_GLCD_HEIGHT, LOGO16_GLCD_WIDTH);
 }
 
 
@@ -206,45 +254,7 @@ void loop() {
 }
 
 
-// void testdrawbitmap(const uint8_t *bitmap, uint8_t w, uint8_t h) {
-//   uint8_t icons[NUMFLAKES][3];
 
-//   // initialize
-//   for (uint8_t f = 0; f < NUMFLAKES; f++) {
-//     icons[f][XPOS] = random(display.width());
-//     icons[f][YPOS] = 0;
-//     icons[f][DELTAY] = random(5) + 1;
-
-//     Serial.print("x: ");
-//     Serial.print(icons[f][XPOS], DEC);
-//     Serial.print(" y: ");
-//     Serial.print(icons[f][YPOS], DEC);
-//     Serial.print(" dy: ");
-//     Serial.println(icons[f][DELTAY], DEC);
-//   }
-
-//   while (1) {
-//     // draw each icon
-//     for (uint8_t f = 0; f < NUMFLAKES; f++) {
-//       display.drawBitmap(icons[f][XPOS], icons[f][YPOS], bitmap, w, h, SH110X_WHITE);
-//     }
-//     display.display();
-//     delay(200);
-
-//     // then erase it + move it
-//     for (uint8_t f = 0; f < NUMFLAKES; f++) {
-//       display.drawBitmap(icons[f][XPOS], icons[f][YPOS], bitmap, w, h, SH110X_BLACK);
-//       // move it
-//       icons[f][YPOS] += icons[f][DELTAY];
-//       // if its gone, reinit
-//       if (icons[f][YPOS] > display.height()) {
-//         icons[f][XPOS] = random(display.width());
-//         icons[f][YPOS] = 0;
-//         icons[f][DELTAY] = random(5) + 1;
-//       }
-//     }
-//   }
-// }
 
 
 // void testdrawchar(void) {
