@@ -42,7 +42,7 @@ void setup() {
   Serial.begin(9600);
 
   randomSeed(analogRead(5));        // Use the port A5 as a pseudo-random number to define de seed for the random function.
-  // Otherwise it would use the same seed every time and get the same number the sketch runs
+  // Otherwise it would use the same seed every time and get the same number every time the sketch runs
   solution_word_id = random(16);
   solution_word = word_list[solution_word_id];
   solution_frequency = (solution_word_id * 5) + 3505;
