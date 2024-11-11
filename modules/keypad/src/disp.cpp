@@ -1,27 +1,8 @@
-/*********************************************************************
-  This is an example for our Monochrome OLEDs based on SH110X drivers
-
-  This example is for a 128x64 size display using SPi to communicate
-  5 pins are required to interface 
-
-  Adafruit invests time and resources providing this open source code,
-  please support Adafruit and open-source hardware by purchasing
-  products from Adafruit!
-
-  Written by Limor Fried/Ladyada  for Adafruit Industries.
-  BSD license, check license.txt for more information
-  All text above, and the splash screen must be included in any redistribution
-
-  SPi SH1106 modified by Rupert Hirst  12/09/21
-*********************************************************************/
-
-
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
-#include <Keypad.h>
 
 
 #define OLED_MOSI     10
@@ -34,35 +15,13 @@
 // Create the OLED display
 Adafruit_SH1106G display = Adafruit_SH1106G(128, 64,OLED_MOSI, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
 
-
-#define NUMFLAKES 10
-#define XPOS 0
-#define YPOS 1
-#define DELTAY 2
-
-
-#define LOGO16_GLCD_HEIGHT 16
-#define LOGO16_GLCD_WIDTH  16
-/*
-static const unsigned char PROGMEM logo16_glcd_bmp[] =
-{ B00000000, B11000000,
-  B00000001, B11000000,
-  B00000001, B11000000,
-  B00000011, B11100000,
-  B11110011, B11100000,
-  B11111110, B11111000,
-  B01111110, B11111111,
-  B00110011, B10011111,
-  B00011111, B11111100,
-  B00001101, B01110000,
-  B00011011, B10100000,
-  B00111111, B11100000,
-  B00111111, B11110000,
-  B01111100, B11110000,
-  B01110000, B01110000,
-  B00000000, B00110000
-};
-*/
+int column1[] = {0, 1, 2, 3, 4, 5, 6};
+int column2[] = {7, 0, 6, 8, 9, 5, 10};
+int column3[] = {11, 12, 8, 13, 14, 2, 9};
+int column4[] = {15, 16, 17, 4, 13, 10, 18};
+int column5[] = {19, 20, 17, 21, 16, 22, 23};
+int column6[] = {15, 7, 24, 25, 19, 26, 27};
+int *columns[] = {column1, column2, column3, column4, column5, column6};
 
 static const unsigned char logo16_glcd_bmp [] PROGMEM = {
 	// '1, 16x16px
@@ -70,21 +29,10 @@ static const unsigned char logo16_glcd_bmp [] PROGMEM = {
 	0x18, 0x18, 0x1c, 0x38, 0x0e, 0x70, 0x07, 0xe0, 0x03, 0xc0, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80
 };
 
-const int ROW_NUM    = 4; // four rows
-const int COLUMN_NUM = 4; // four columns
-
-char keys[ROW_NUM][COLUMN_NUM] = {
-  {'1','2','3', 'A'},
-  {'4','5','6', 'B'},
-  {'7','8','9', 'C'},
-  {'*','0','#', 'D'}
-};
-
-byte pin_rows[ROW_NUM] = {11, 12, 13, 6};      // connect to the row pinouts of the keypad
-byte pin_column[COLUMN_NUM] = {4, 3, 2, 1}; // connect to the column pinouts of the keypad
-
-Keypad keypad = Keypad(makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COLUMN_NUM );
-
+// Store the bitmaps in an array of pointers
+const unsigned char *bitmaps[] = {logo16_glcd_bmp};
+const int numBitmaps = sizeof(bitmaps) / sizeof(bitmaps[0]);
+/*
 void testdrawbitmap(const uint8_t *bitmap, uint8_t w, uint8_t h) {
   uint8_t icons[NUMFLAKES][3];
 
@@ -124,272 +72,101 @@ void testdrawbitmap(const uint8_t *bitmap, uint8_t w, uint8_t h) {
     }
   }
 }
+*/
+void selectRandomElements(int *array, int *selectedElements, int *selectedIndices, int arraySize, int numSelections) {
+  for (int i = 0; i < numSelections; i++) {
+    int index;
+    bool unique;
 
-void setup()   {
-  Serial.begin(9600); delay(500);
+    // Ensure unique selection
+    do {
+      unique = true;
+      index = random(0, arraySize);
 
-  //display.setContrast (0); // dim display
+      // Check if the index has already been selected
+      for (int j = 0; j < i; j++) {
+        if (selectedIndices[j] == index) {
+          unique = false;
+          break;
+        }
+      }
+    } while (!unique);
 
+    // Store the selected element and its index
+    selectedIndices[i] = index;
+    selectedElements[i] = array[index];
+  }
+}
+
+// Function to get the indices of the sorted values
+void getSortedIndices(int *array, int *sortedIndices, int size) {
+  // Initialize the sortedIndices array
+  for (int i = 0; i < size; i++) {
+    sortedIndices[i] = i;
+  }
+
+  // Sort the indices based on the values in the original array (using bubble sort for simplicity)
+  for (int i = 0; i < size - 1; i++) {
+    for (int j = 0; j < size - i - 1; j++) {
+      if (array[sortedIndices[j]] > array[sortedIndices[j + 1]]) {
+        // Swap indices if the corresponding values are out of order
+        int temp = sortedIndices[j];
+        sortedIndices[j] = sortedIndices[j + 1];
+        sortedIndices[j + 1] = temp;
+      }
+    }
+  }
+}
+
+int *img_order[4];
+int *relative_idx[4];
+
+void generateSolution() {
+  int randomIndex = random(0, 6);
+  int *selectedColumn = columns[randomIndex];
+  selectRandomElements(selectedColumn, *img_order, *relative_idx, 7, 4);
+
+}
+
+unsigned int X_COORDS [] = {24, 80, 24, 80};
+unsigned int Y_COORDS [] = {8, 8, 32, 32};
+
+#define IMG_HEIGHT 24
+#define IMG_WIDTH  24
+
+void initDisplay(int *img_order) {
   // Start OLED
   display.begin(0, true); // we dont use the i2c address but we will reset!
-
-
   // Show image buffer on the display hardware.
   // Since the buffer is intialized with an Adafruit splashscreen
   // internally, this will display the splashscreen.
   display.display();
   delay(2000);
-
   // Clear the buffer.
   display.clearDisplay();
-
-  // // draw a single pixel
-  // display.drawPixel(10, 10, SH110X_WHITE);
-  // // Show the display buffer on the hardware.
-  // // NOTE: You _must_ call display after making any drawing commands
-  // // to make them visible on the display hardware!
-  // display.display();
-  // delay(2000);
-  // display.clearDisplay();
-
-  // // draw many lines
-  // testdrawline();
-  // display.display();
-  // delay(2000);
-  // display.clearDisplay();
-
-  // // draw rectangles
-  // testdrawrect();
-  // display.display();
-  // delay(2000);
-  // display.clearDisplay();
-
-  // // draw multiple rectangles
-  // testfillrect();
-  // display.display();
-  // delay(2000);
-  // display.clearDisplay();
-
-  // // draw mulitple circles
-  // testdrawcircle();
-  // display.display();
-  // delay(2000);
-  // display.clearDisplay();
-
-  // // draw a SH110X_WHITE circle, 10 pixel radius
-  // display.fillCircle(display.width() / 2, display.height() / 2, 10, SH110X_WHITE);
-  // display.display();
-  // delay(2000);
-  // display.clearDisplay();
-
-  // testdrawroundrect();
-  // delay(2000);
-  // display.clearDisplay();
-
-  // testfillroundrect();
-  // delay(2000);
-  // display.clearDisplay();
-
-  // testdrawtriangle();
-  // delay(2000);
-  // display.clearDisplay();
-
-  // testfilltriangle();
-  // delay(2000);
-  // display.clearDisplay();
-
-  // draw the first ~12 characters in the font
-  // testdrawchar();
-  // display.display();
-  // delay(2000);
-  // display.clearDisplay();
+  int idx = 0;
+  for (uint8_t f = 0; f < 3; f++) {
+      idx = img_order[f];
+      display.drawBitmap(X_COORDS[f], Y_COORDS[f], bitmaps[idx], IMG_WIDTH, IMG_HEIGHT, SH110X_WHITE);
+    }
+    display.display();
+    delay(200);
 
 
-  // text display tests
-  // display.setTextSize(1);
-  // display.setTextColor(SH110X_WHITE);
-  // display.setCursor(0, 0);
-  // display.println("Failure is always an option");
-  // display.setTextColor(SH110X_BLACK, SH110X_WHITE); // 'inverted' text
-  // display.println(3.141592);
-  // display.setTextSize(2);
-  // display.setTextColor(SH110X_WHITE);
-  // display.print("0x"); display.println(0xDEADBEEF, HEX);
-  // display.display();
-  // delay(2000);
-  // display.clearDisplay();
+}
 
-  // // miniature bitmap display
-  // display.drawBitmap(30, 16,  logo16_glcd_bmp, 16, 16, 1);
-  // display.display();
-  // delay(5000);
+void setup()   {
+  Serial.begin(9600); delay(500);
 
-  // // invert the display
-  // display.invertDisplay(true);
-  // delay(1000);
-  // display.invertDisplay(false);
-  // delay(1000);
-  // display.clearDisplay();
+  randomSeed(analogRead(0));  // Seed the random function
+  //display.setContrast (0); // dim display
 
-  // // draw a bitmap icon and 'animate' movement
-  testdrawbitmap(logo16_glcd_bmp, LOGO16_GLCD_HEIGHT, LOGO16_GLCD_WIDTH);
+  
+
+  //testdrawbitmap(logo16_glcd_bmp, LOGO16_GLCD_HEIGHT, LOGO16_GLCD_WIDTH);
 }
 
 
 void loop() {
-  
-  char key = keypad.getKey();
-  display.display();
-
-  if (key) {
-    display.setCursor(display.width() / 2, display.height() / 2);
-    display.setTextSize(2);
-    display.setTextColor(SH110X_WHITE);
-    display.clearDisplay();
-    display.print(key);
-    
-  }
-  Serial.println(key);
 
 }
-
-
-
-
-
-// void testdrawchar(void) {
-//   display.setTextSize(1);
-//   display.setTextColor(SH110X_WHITE);
-//   display.setCursor(0, 0);
-
-//   for (uint8_t i = 0; i < 168; i++) {
-//     if (i == '\n') continue;
-//     display.write(i);
-//     if ((i > 0) && (i % 21 == 0))
-//       display.println();
-//   }
-//   display.display();
-//   delay(1);
-// }
-
-// void testdrawcircle(void) {
-//   for (int16_t i = 0; i < display.height(); i += 2) {
-//     display.drawCircle(display.width() / 2, display.height() / 2, i, SH110X_WHITE);
-//     display.display();
-//     delay(1);
-//   }
-// }
-
-// void testfillrect(void) {
-//   uint8_t color = 1;
-//   for (int16_t i = 0; i < display.height() / 2; i += 3) {
-//     // alternate colors
-//     display.fillRect(i, i, display.width() - i * 2, display.height() - i * 2, color % 2);
-//     display.display();
-//     delay(1);
-//     color++;
-//   }
-// }
-
-// void testdrawtriangle(void) {
-//   for (int16_t i = 0; i < min(display.width(), display.height()) / 2; i += 5) {
-//     display.drawTriangle(display.width() / 2, display.height() / 2 - i,
-//                          display.width() / 2 - i, display.height() / 2 + i,
-//                          display.width() / 2 + i, display.height() / 2 + i, SH110X_WHITE);
-//     display.display();
-//     delay(1);
-//   }
-// }
-
-// void testfilltriangle(void) {
-//   uint8_t color = SH110X_WHITE;
-//   for (int16_t i = min(display.width(), display.height()) / 2; i > 0; i -= 5) {
-//     display.fillTriangle(display.width() / 2, display.height() / 2 - i,
-//                          display.width() / 2 - i, display.height() / 2 + i,
-//                          display.width() / 2 + i, display.height() / 2 + i, SH110X_WHITE);
-//     if (color == SH110X_WHITE) color = SH110X_BLACK;
-//     else color = SH110X_WHITE;
-//     display.display();
-//     delay(1);
-//   }
-// }
-
-// void testdrawroundrect(void) {
-//   for (int16_t i = 0; i < display.height() / 2 - 2; i += 2) {
-//     display.drawRoundRect(i, i, display.width() - 2 * i, display.height() - 2 * i, display.height() / 4, SH110X_WHITE);
-//     display.display();
-//     delay(1);
-//   }
-// }
-
-// void testfillroundrect(void) {
-//   uint8_t color = SH110X_WHITE;
-//   for (int16_t i = 0; i < display.height() / 2 - 2; i += 2) {
-//     display.fillRoundRect(i, i, display.width() - 2 * i, display.height() - 2 * i, display.height() / 4, color);
-//     if (color == SH110X_WHITE) color = SH110X_BLACK;
-//     else color = SH110X_WHITE;
-//     display.display();
-//     delay(1);
-//   }
-// }
-
-// void testdrawrect(void) {
-//   for (int16_t i = 0; i < display.height() / 2; i += 2) {
-//     display.drawRect(i, i, display.width() - 2 * i, display.height() - 2 * i, SH110X_WHITE);
-//     display.display();
-//     delay(1);
-//   }
-// }
-
-// void testdrawline() {
-//   for (int16_t i = 0; i < display.width(); i += 4) {
-//     display.drawLine(0, 0, i, display.height() - 1, SH110X_WHITE);
-//     display.display();
-//     delay(1);
-//   }
-//   for (int16_t i = 0; i < display.height(); i += 4) {
-//     display.drawLine(0, 0, display.width() - 1, i, SH110X_WHITE);
-//     display.display();
-//     delay(1);
-//   }
-//   delay(250);
-
-//   display.clearDisplay();
-//   for (int16_t i = 0; i < display.width(); i += 4) {
-//     display.drawLine(0, display.height() - 1, i, 0, SH110X_WHITE);
-//     display.display();
-//     delay(1);
-//   }
-//   for (int16_t i = display.height() - 1; i >= 0; i -= 4) {
-//     display.drawLine(0, display.height() - 1, display.width() - 1, i, SH110X_WHITE);
-//     display.display();
-//     delay(1);
-//   }
-//   delay(250);
-
-//   display.clearDisplay();
-//   for (int16_t i = display.width() - 1; i >= 0; i -= 4) {
-//     display.drawLine(display.width() - 1, display.height() - 1, i, 0, SH110X_WHITE);
-//     display.display();
-//     delay(1);
-//   }
-//   for (int16_t i = display.height() - 1; i >= 0; i -= 4) {
-//     display.drawLine(display.width() - 1, display.height() - 1, 0, i, SH110X_WHITE);
-//     display.display();
-//     delay(1);
-//   }
-//   delay(250);
-
-//   display.clearDisplay();
-//   for (int16_t i = 0; i < display.height(); i += 4) {
-//     display.drawLine(display.width() - 1, 0, 0, i, SH110X_WHITE);
-//     display.display();
-//     delay(1);
-//   }
-//   for (int16_t i = 0; i < display.width(); i += 4) {
-//     display.drawLine(display.width() - 1, 0, i, display.height() - 1, SH110X_WHITE);
-//     display.display();
-//     delay(1);
-//   }
-//   delay(250);
-// }
