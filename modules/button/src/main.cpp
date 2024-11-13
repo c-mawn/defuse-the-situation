@@ -246,13 +246,13 @@ void game_leds(int button_color, bool light_strip = false, int light_strip_color
   // Set light strip LEDs
   for (int i = 0; i < NUM_STRIP_LEDS; i++) {
     if (light_strip == true) {
-      module_leds[i + NUM_STRIP_LEDS] = CRGB (
+      module_leds[i + NUM_STRIP_LEDS - 1] = CRGB (
         light_colors[light_strip_color][0],     // Assign to LEDs the light strip color
         light_colors[light_strip_color][1],
         light_colors[light_strip_color][2]);
     }
     else {
-      module_leds[i + NUM_STRIP_LEDS] = CRGB::Black;
+      module_leds[i + NUM_STRIP_LEDS - 1] = CRGB::Black;
     }
   }
 
