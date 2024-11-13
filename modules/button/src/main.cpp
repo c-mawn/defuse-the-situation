@@ -2,20 +2,22 @@
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
+#include <FastLED.h>
 
 
 // Module definitions for communication with the main module.
 #define STRIKE        11    // Pin to indicate a strike in-game
 #define SOLVED        12    // Pin to indicate the module has been solved
 
+// Definitions for OLED display
 #define OLED_MOSI     10
-#define OLED_RST      9
 #define OLED_CLK      8
 #define OLED_DC       7
 #define OLED_CS       5
+#define OLED_RST      9
 
 // Create the OLED display
-Adafruit_SH1106G display = Adafruit_SH1106G(128, 64,OLED_MOSI, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
+Adafruit_SH1106G display = Adafruit_SH1106G(128, 64, OLED_MOSI, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
 
 
 // ***********  BITMAPS   ***********
@@ -27,8 +29,17 @@ const unsigned char small_battery [] PROGMEM = {
 	0xff, 0xfe, 0xff, 0xfe, 0xff, 0xfe, 0xff, 0xfe, 0xff, 0xfe, 0xff, 0xfe
 };
 
+// Definitions for LED strip
+#define LED_STRIP_PIN     4
+#define NUM_BUTTON_LEDS   2       // 3
+#define NUM_STRIP_LEDS    3       // 5
+#define NUM_LEDS          (NUM_BUTTON_LEDS + NUM_STRIP_LEDS)
+#define BRIGHTNESS        5
+#define LED_TYPE          WS2812B
+CRGB module_leds[NUM_LEDS];  //#define COLOR_ORDER GRB
+
 // Game definitions and variables
-#define BUTTON      4
+#define MAIN_BUTTON       3
 
 bool module_solution = false;     // Variable to indicate if the module is solved
 int minutes_ones;
@@ -38,7 +49,7 @@ unsigned long current_time;
 unsigned long last_action_time;
 bool button_pressed;
 
-const String button_text[] = {"Detonate","Abort", "Hold", "Press"};
+const char button_text[4][9] = {"Detonate","Abort", "Hold", "Press"};
 const int light_colors[][3] = {
         {255, 255, 255},  // 0 - White      - Light Strip & Button
         {255, 0, 0},      // 1 - Red        - Light Strip & Button
@@ -48,7 +59,7 @@ const int light_colors[][3] = {
         {0, 255, 0}       // 5 - Green      - Light Strip
     };
 int b_color;              // Button color (Random number from 0 to 3 (inclusive)) from light_colors
-int b_text;               // Button text (Random number from 0 to 3 (inclusive)) from button_texts
+int button_game_text;               // Button text (Random number from 0 to 3 (inclusive)) from button_texts
 int light_strip_color;    // Light strip color (Random number from 0 to 5 (inclusive)) from light_colors
 int num_batteries;        // Number of batteries (Up to 3 batteries, the number should be in base 1)
 int shape;                // Shape index (Random number from 0 to 5 (inclusive))
@@ -65,7 +76,7 @@ bool game_solution;       // Indicate the button mode used to solve the module.
 
 // Display Functions
 
-void draw_centered_text(String display_text, int text_size, int y_offset) {
+void draw_centered_text(char display_text[], int text_size, int y_offset) {
   // Needs a clear display before the function, and a display after the function
   display.setTextSize(text_size);
   display.setTextColor(SH110X_WHITE);
@@ -73,7 +84,6 @@ void draw_centered_text(String display_text, int text_size, int y_offset) {
   uint16_t w, h;
 
   display.getTextBounds(display_text, 0, 0, &x1, &y1, &w, &h);
-  Serial.println(h);
   display.setCursor((128/2)-(w/2), y_offset);
   display.println(display_text);
 }
@@ -102,7 +112,7 @@ void draw_triangle(int x_0, int y_0,int x_1, int y_1, int x_2, int y_2, int thic
 }
 
 
-void display_phase1(String word, int shape_index, int n_batteries) {
+void display_phase1(char word[], int shape_index, int n_batteries) {
   // Display configuration for the first stage of the module
   // (Before Pressing the button)
 
@@ -159,11 +169,14 @@ void display_hold_and_wait(int min_ones, int sec_tens, int sec_ones) {
   // (Before Pressing the button)
 
   display.clearDisplay();
+  char m_ones[1] = {min_ones + 48};
+  char s_tens[1] = {sec_tens + 48};
+  char s_ones[1] = {sec_ones + 48};
 
   // Button word
-  draw_centered_text(String(min_ones), 2, 3);   // Draw the minutes ones
-  draw_centered_text(String(sec_tens), 2, 13);   // Draw the seconds tens
-  draw_centered_text(String(sec_ones), 2, 23);   // Draw the seconds ones
+  draw_centered_text(m_ones, 2, 3);   // Draw the minutes ones
+  draw_centered_text(s_tens, 2, 23);   // Draw the seconds tens
+  draw_centered_text(s_ones, 2, 43);   // Draw the seconds ones
 
   // BitMap Example
   // draw_rectangle(65, 64 - 22, 2, 63, 22);   // Rectangle enclosing the batteries
@@ -179,16 +192,86 @@ void display_hold_and_wait(int min_ones, int sec_tens, int sec_ones) {
 }
 
 
+void display_strike() {
+  // 
+  display.clearDisplay();
+
+  // PLACE HOLDER FOR REAL STRIKE DISPLAY ************************************
+  display.drawBitmap(69 + 2*(4 + 15), 28, small_battery, 15, 30, SH110X_WHITE);   // Display the first battery
+
+  display.display();
+}
+
+
+void display_solved_module() {
+  // 
+  display.clearDisplay();
+
+  // PLACE HOLDER FOR REAL SOLVED DISPLAY *********************
+  display.drawBitmap(3, 3, small_battery, 15, 30, SH110X_WHITE);   // Display the first battery
+  
+  display.display();
+}
+
+
+// LED strip functions
+
+void initLights() {
+  delay(3000); // power-up safety delay
+  FastLED.addLeds<WS2812, LED_STRIP_PIN, GRB>(module_leds, NUM_LEDS);
+  FastLED.setBrightness(BRIGHTNESS);
+}
+
+
+void turn_off_lights() {
+  for (int i = 0; i > NUM_LEDS; i++){
+    module_leds[i] = CRGB::Black;
+    FastLED.show();
+    delay(40);
+  }
+}
+
+
+void game_leds(int button_color, bool light_strip = false, int light_strip_color = 0) {
+  // Turns on the LEDs for the button and the light strip
+
+  // Set button LEDs
+  for (int i = 0; i < NUM_BUTTON_LEDS; i++) {
+    module_leds[i] = CRGB (
+      light_colors[button_color][0],            // Assign to the LED the button color
+      light_colors[button_color][1],
+      light_colors[button_color][2]);
+  }
+
+  // Set light strip LEDs
+  for (int i = 0; i < NUM_STRIP_LEDS; i++) {
+    if (light_strip == true) {
+      module_leds[i + NUM_STRIP_LEDS] = CRGB (
+        light_colors[light_strip_color][0],     // Assign to LEDs the light strip color
+        light_colors[light_strip_color][1],
+        light_colors[light_strip_color][2]);
+    }
+    else {
+      module_leds[i + NUM_STRIP_LEDS] = CRGB::Black;
+    }
+  }
+
+  // Show the color of the button and the light strip LEDs
+  FastLED.show();
+  delay(40);
+}
+
+
 // Game functions
 
 bool release_immediately() {
   // Conditional statements to determine if the button has to be pressed and released immediately
 
-  if (b_color == 2 && b_text == 1) {
+  if (b_color == 2 && button_game_text == 1) {
     // If the button is blue and the button says "Abort", hold and wait.
     return false;
   }
-  else if (num_batteries > 1 && b_text == 0) {
+  else if (num_batteries > 1 && button_game_text == 0) {
     // If there is more than 1 battery on the bomb and the button says "Detonate", hold and release.
     return true;
   }
@@ -204,7 +287,7 @@ bool release_immediately() {
     // If the button is yellow, hold and wait.
     return false;
   }
-  else if (b_color == 1 && b_text == 2) {
+  else if (b_color == 1 && button_game_text == 2) {
     // If the button is red and the button says "Hold", hold and release.
     return true;
   }
@@ -217,7 +300,7 @@ bool release_immediately() {
 void game_setup() {
   // Generate the game states
   b_color = random(4);
-  b_text =  random(4);
+  button_game_text =  random(4);
   light_strip_color = random(6);
   num_batteries = random(1, 4);   // Chose up to 3 batteries
   shape = random(6);
@@ -233,7 +316,7 @@ void hold_and_release() {
 
   while (current_time < last_action_time + 1000) {
     current_time = millis();
-    if (digitalRead(BUTTON) != LOW) {
+    if (digitalRead(MAIN_BUTTON) != LOW) {
       module_solution = true;
       break;
     }
@@ -256,7 +339,7 @@ void hold_and_wait() {
     display_hold_and_wait(minutes_ones, seconds_tens, seconds_ones);
   }
 
-  if (digitalRead(BUTTON) != LOW) {
+  if (digitalRead(MAIN_BUTTON) != LOW) {
     button_pressed = false;
 
     if (light_strip_color == 2) {
@@ -295,26 +378,41 @@ void setup() {
   Serial.begin(9600);
   randomSeed(analogRead(5));
 
+  pinMode(STRIKE, OUTPUT);
+  pinMode(SOLVED, OUTPUT);
+  pinMode(MAIN_BUTTON, INPUT_PULLUP);
+
   // Show image buffer on the display hardware.
   // Since the buffer is intialized with an Adafruit splashscreen
   // internally, this will display the splashscreen.
   display.begin(0, true);
   display.display();
   delay(1000);
+  Serial.println("Screen started");
 
   // Clear the buffer.
   display.clearDisplay();
 
   game_setup();
+
+  initLights();
+  Serial.println("LIGHTS STARTED ************");
 }
 
 void loop() {
   while (!module_solution) {
     button_pressed = false;
 
+    // Show the display and the button LEDs
+    turn_off_lights();
+    game_leds(b_color);
+    delay(500);
+    display_phase1(button_text[button_game_text], shape, num_batteries);
+
+    // While the button is not pressed
     while (!button_pressed) {
-      display_phase1(button_text[b_text], shape, num_batteries);
-      if (digitalRead(BUTTON) == LOW) {
+      Serial.println(b_color);
+      if (digitalRead(MAIN_BUTTON) == LOW) {
         // If the button is pressed, go to the next phase
         button_pressed = true;
 
@@ -324,11 +422,18 @@ void loop() {
         seconds_ones = (int(trunc(current_time/1000)) % 60) % 10;
         
         display_hold_and_wait(minutes_ones, seconds_tens, seconds_ones);
+
+        // Show the light strip if the soluton is to hold and wait.
+        if (!game_solution) {
+          turn_off_lights();
+          game_leds(b_color, true, light_strip_color);
+        }
       }
     }
 
     // While the button is pressed
     while (button_pressed) {
+      Serial.println(light_strip_color);
       // Choose between hold and release, or hold and wait.
       if (game_solution) {
         hold_and_release();
@@ -347,11 +452,14 @@ void loop() {
       digitalWrite(STRIKE, HIGH);
       delay(500);
       digitalWrite(STRIKE, LOW);
+      display_strike();
       delay(2000);      // Wait 2 seconds to let the player lift their hands from the button.
     }
   }
 
   Serial.println("Sucess!!!");
   digitalWrite(SOLVED, HIGH);
+  display_solved_module();
+  
   while(1){}
 }
