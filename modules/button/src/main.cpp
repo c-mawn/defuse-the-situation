@@ -2,7 +2,7 @@
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
-#include <FastLED.h>
+#include <Adafruit_NeoPixel.h>
 
 
 // Module definitions for communication with the main module.
@@ -34,35 +34,34 @@ const unsigned char small_battery [] PROGMEM = {
 #define NUM_BUTTON_LEDS   2       // 3
 #define NUM_STRIP_LEDS    3       // 5
 #define NUM_LEDS          (NUM_BUTTON_LEDS + NUM_STRIP_LEDS)
-#define BRIGHTNESS        5
-#define LED_TYPE          WS2812B
-CRGB module_leds[NUM_LEDS];  //#define COLOR_ORDER GRB
+#define M_BRIGHT          5       // Maximum value for the LEDs to turn on (up to 255).
+Adafruit_NeoPixel module_leds = Adafruit_NeoPixel(NUM_LEDS, LED_STRIP_PIN, NEO_GRB + NEO_KHZ800);
 
 // Game definitions and variables
 #define MAIN_BUTTON       3
 
 bool module_solution = false;     // Variable to indicate if the module is solved
-int minutes_ones;
-int seconds_tens;
-int seconds_ones;
+byte minutes_ones;
+byte seconds_tens;
+byte seconds_ones;
 unsigned long current_time;
 unsigned long last_action_time;
 bool button_pressed;
 
 const char button_text[4][9] = {"Detonate","Abort", "Hold", "Press"};
-const int light_colors[][3] = {
-        {255, 255, 255},  // 0 - White      - Light Strip & Button
-        {255, 0, 0},      // 1 - Red        - Light Strip & Button
-        {0, 0, 255},      // 2 - Blue       - Light Strip & Button
-        {255, 255, 0},    // 3 - Yellow     - Light Strip & Button
-        {255, 0, 255},    // 4 - Magenta    - Light Strip
-        {0, 255, 0}       // 5 - Green      - Light Strip
+const uint32_t light_colors[6] = {
+        module_leds.Color(M_BRIGHT, M_BRIGHT, M_BRIGHT),  // 0 - White   - Light Strip & Button
+        module_leds.Color(M_BRIGHT, 0, 0),                // 1 - Red     - Light Strip & Button
+        module_leds.Color(0, 0, M_BRIGHT),                // 2 - Blue    - Light Strip & Button
+        module_leds.Color(M_BRIGHT, M_BRIGHT, 0),         // 3 - Yellow  - Light Strip & Button
+        module_leds.Color(M_BRIGHT, 0, M_BRIGHT),         // 4 - Magenta - Light Strip
+        module_leds.Color(0, M_BRIGHT, 0),                // 5 - Green   - Light Strip
     };
-int b_color;              // Button color (Random number from 0 to 3 (inclusive)) from light_colors
-int button_game_text;               // Button text (Random number from 0 to 3 (inclusive)) from button_texts
-int light_strip_color;    // Light strip color (Random number from 0 to 5 (inclusive)) from light_colors
-int num_batteries;        // Number of batteries (Up to 3 batteries, the number should be in base 1)
-int shape;                // Shape index (Random number from 0 to 5 (inclusive))
+byte b_color;              // Button color (Random number from 0 to 3 (inclusive)) from light_colors
+byte button_game_text;               // Button text (Random number from 0 to 3 (inclusive)) from button_texts
+byte light_strip_color;    // Light strip color (Random number from 0 to 5 (inclusive)) from light_colors
+byte num_batteries;        // Number of batteries (Up to 3 batteries, the number should be in base 1)
+byte shape;                // Shape index (Random number from 0 to 5 (inclusive))
 // Shapes are indexed as follows:
 //    0 - Empty triangle
 //    1 - Filled triangle
@@ -76,7 +75,7 @@ bool game_solution;       // Indicate the button mode used to solve the module.
 
 // Display Functions
 
-void draw_centered_text(char display_text[], int text_size, int y_offset) {
+void draw_centered_text(char display_text[], byte text_size, byte y_offset) {
   // Needs a clear display before the function, and a display after the function
   display.setTextSize(text_size);
   display.setTextColor(SH110X_WHITE);
@@ -89,20 +88,20 @@ void draw_centered_text(char display_text[], int text_size, int y_offset) {
 }
 
 
-void draw_rectangle(int width, int height, int thickness, int x_0 = 0, int y_0 = 0) {
+void draw_rectangle(byte width, byte height, byte thickness, byte x_0 = 0, byte y_0 = 0) {
   for (int i = 0; i < thickness; i++) {
     display.drawRect(x_0 + i, y_0 + i, width - (2*i), height - (2*i), SH110X_WHITE);
   }
 }
 
 
-void draw_circle(int radius, int thickness, int x_0 = 0, int y_0 = 0) {
+void draw_circle(byte radius, byte thickness, byte x_0 = 0, byte y_0 = 0) {
   display.fillCircle(x_0, y_0, radius, SH110X_WHITE);
   display.fillCircle(x_0, y_0, radius - (thickness), SH110X_BLACK);
 }
 
 
-void draw_triangle(int x_0, int y_0,int x_1, int y_1, int x_2, int y_2, int thickness, int x = 0, int y = 0) {
+void draw_triangle(byte x_0, byte y_0,byte x_1, byte y_1, byte x_2, byte y_2, byte thickness, byte x = 0, byte y = 0) {
   display.fillTriangle(x_0 + x, y_0 + y, x_1 + x, y_1 + y, x_2 + x, y_2 + y, SH110X_WHITE);
   display.fillTriangle(
     (x_0 + x + 2*thickness), (y_0 + y - thickness),
@@ -112,7 +111,7 @@ void draw_triangle(int x_0, int y_0,int x_1, int y_1, int x_2, int y_2, int thic
 }
 
 
-void display_phase1(char word[], int shape_index, int n_batteries) {
+void display_phase1(char word[], byte shape_index, byte n_batteries) {
   // Display configuration for the first stage of the module
   // (Before Pressing the button)
 
@@ -164,7 +163,7 @@ void display_phase1(char word[], int shape_index, int n_batteries) {
 }
 
 
-void display_hold_and_wait(int min_ones, int sec_tens, int sec_ones) {
+void display_hold_and_wait(byte min_ones, byte sec_tens, byte sec_ones) {
   // Display configuration for the first stage of the module
   // (Before Pressing the button)
 
@@ -216,48 +215,35 @@ void display_solved_module() {
 
 // LED strip functions
 
-void initLights() {
-  delay(3000); // power-up safety delay
-  FastLED.addLeds<WS2812, LED_STRIP_PIN, GRB>(module_leds, NUM_LEDS);
-  FastLED.setBrightness(BRIGHTNESS);
-}
-
-
 void turn_off_lights() {
   for (int i = 0; i > NUM_LEDS; i++){
-    module_leds[i] = CRGB::Black;
-    FastLED.show();
-    delay(40);
+    module_leds.setPixelColor(i, 0, 0, 0);
   }
+  module_leds.show();
+  delay(40);
 }
 
 
-void game_leds(int button_color, bool light_strip = false, int light_strip_color = 0) {
+void game_leds(byte button_color, bool light_strip = false, byte light_strip_color = 0) {
   // Turns on the LEDs for the button and the light strip
 
   // Set button LEDs
   for (int i = 0; i < NUM_BUTTON_LEDS; i++) {
-    module_leds[i] = CRGB (
-      light_colors[button_color][0],            // Assign to the LED the button color
-      light_colors[button_color][1],
-      light_colors[button_color][2]);
+    module_leds.setPixelColor(i, light_colors[button_color]);
   }
 
   // Set light strip LEDs
   for (int i = 0; i < NUM_STRIP_LEDS; i++) {
     if (light_strip == true) {
-      module_leds[i + NUM_STRIP_LEDS - 1] = CRGB (
-        light_colors[light_strip_color][0],     // Assign to LEDs the light strip color
-        light_colors[light_strip_color][1],
-        light_colors[light_strip_color][2]);
+      module_leds.setPixelColor(i + NUM_STRIP_LEDS - 1, light_colors[light_strip_color]);
     }
     else {
-      module_leds[i + NUM_STRIP_LEDS - 1] = CRGB::Black;
+      module_leds.setPixelColor(i + NUM_STRIP_LEDS - 1, 0, 0, 0);
     }
   }
 
   // Show the color of the button and the light strip LEDs
-  FastLED.show();
+  module_leds.show();
   delay(40);
 }
 
@@ -330,7 +316,7 @@ void hold_and_wait() {
   // 
   current_time = millis();
 
-  if (current_time < last_action_time + 1000) {
+  if (current_time >= last_action_time + 1000) {
     last_action_time = millis();
     minutes_ones = int(trunc((current_time/1000)/60)) % 10;
     seconds_tens = int(trunc((int(trunc(current_time/1000)) % 60) / 10));
@@ -395,7 +381,8 @@ void setup() {
 
   game_setup();
 
-  initLights();
+  module_leds.begin();
+  module_leds.show(); // Initialize all pixels to 'off'
   Serial.println("LIGHTS STARTED ************");
 }
 
@@ -416,15 +403,15 @@ void loop() {
         // If the button is pressed, go to the next phase
         button_pressed = true;
 
-        last_action_time = millis();
-        minutes_ones = int(trunc((current_time/1000)/60)) % 10;
-        seconds_tens = int(trunc((int(trunc(current_time/1000)) % 60) / 10));
-        seconds_ones = (int(trunc(current_time/1000)) % 60) % 10;
-        
-        display_hold_and_wait(minutes_ones, seconds_tens, seconds_ones);
-
-        // Show the light strip if the soluton is to hold and wait.
+        // Show the light strip and the counter screen if the soluton is to hold and wait.
         if (!game_solution) {
+          last_action_time = millis();
+          minutes_ones = int(trunc((current_time/1000)/60)) % 10;
+          seconds_tens = int(trunc((int(trunc(current_time/1000)) % 60) / 10));
+          seconds_ones = (int(trunc(current_time/1000)) % 60) % 10;
+        
+          display_hold_and_wait(minutes_ones, seconds_tens, seconds_ones);
+
           turn_off_lights();
           game_leds(b_color, true, light_strip_color);
         }
