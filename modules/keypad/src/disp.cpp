@@ -73,8 +73,8 @@ int column1[] = {0, 1, 2, 3, 4, 5, 6};
 int column2[] = {7, 0, 6, 8, 9, 5, 10};
 int column3[] = {11, 12, 8, 13, 14, 2, 9};
 int column4[] = {15, 16, 17, 4, 13, 10, 18};
-int column5[] = {19, 20, 17, 21, 16, 22, 23};
-int column6[] = {15, 7, 24, 25, 19, 26, 27};
+int column5[] = {19, 18, 17, 20, 16, 21, 22};
+int column6[] = {15, 7, 23, 24, 19, 25, 26};
 int *columns[] = {column1, column2, column3, column4, column5, column6};
 
 static const unsigned char logo16_glcd_bmp [] PROGMEM = {
