@@ -11,21 +11,14 @@
 #define STRIKE        18    // Pin to indicate a strike in-game
 #define SOLVED        19    // Pin to indicate the module has been solved
 
-// // Definitions for OLED display
-// #define OLED_MOSI     10
-// #define OLED_CLK      8
-// #define OLED_DC       7
-// #define OLED_CS       5
-// #define OLED_RST      9
-
 // Declaration for SSD1306 display connected using I2C
+#define OLED_SCL        22
+#define OLED_SDA        21
 #define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
-#define SCREEN_ADDRESS 0x3C
-Adafruit_SSD1306 display(128, 64, &Wire, OLED_RESET);
-Adafruit_SSD1306 display2(128, 64, &Wire, OLED_RESET);
-
-// // Create the OLED display
-// Adafruit_SH1106G display = Adafruit_SH1106G(128, 64, OLED_MOSI, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
+#define SCREEN_ADDRESS_1 0x3C
+#define SCREEN_ADDRESS_2 0x3D
+Adafruit_SSD1306 display_1(128, 64, &Wire, OLED_RESET);
+Adafruit_SSD1306 display_2(128, 64, &Wire, OLED_RESET);
 
 
 // ***********  BITMAPS   ***********
@@ -82,94 +75,83 @@ bool game_solution;       // Indicate the button mode used to solve the module.
 
 
 // Display Functions
+// S1 or S2 indicates for which screen the function works.
 
-void draw_centered_text(char display_text[], byte text_size, byte y_offset) {
+void draw_centered_text_S1(char display_text[], byte text_size, byte y_offset) {
   // Needs a clear display before the function, and a display after the function
-  display.setTextSize(text_size);
-  display.setTextColor(SH110X_WHITE);
+  display_1.setTextSize(text_size);
+  display_1.setTextColor(SSD1306_WHITE);
   int16_t  x1, y1;
   uint16_t w, h;
 
-  display.getTextBounds(display_text, 0, 0, &x1, &y1, &w, &h);
-  display.setCursor((128/2)-(w/2), y_offset);
-  display.println(display_text);
+  display_1.getTextBounds(display_text, 0, 0, &x1, &y1, &w, &h);
+  display_1.setCursor((128/2)-(w/2), y_offset);
+  display_1.println(display_text);
 }
 
 
-void draw_centered_text2(char display_text[], byte text_size, byte y_offset) {
-  // Needs a clear display before the function, and a display after the function
-  display2.setTextSize(text_size);
-  display2.setTextColor(SH110X_WHITE);
-  int16_t  x1, y1;
-  uint16_t w, h;
-
-  display2.getTextBounds(display_text, 0, 0, &x1, &y1, &w, &h);
-  display2.setCursor((128/2)-(w/2), y_offset);
-  display2.println(display_text);
-}
-
-
-void draw_rectangle(byte width, byte height, byte thickness, byte x_0 = 0, byte y_0 = 0) {
+void draw_rectangle_S1(byte width, byte height, byte thickness, byte x_0 = 0, byte y_0 = 0) {
   for (int i = 0; i < thickness; i++) {
-    display.drawRect(x_0 + i, y_0 + i, width - (2*i), height - (2*i), SH110X_WHITE);
+    display_1.drawRect(x_0 + i, y_0 + i, width - (2*i), height - (2*i), SSD1306_WHITE);
   }
 }
 
 
-void draw_circle(byte radius, byte thickness, byte x_0 = 0, byte y_0 = 0) {
-  display.fillCircle(x_0, y_0, radius, SH110X_WHITE);
-  display.fillCircle(x_0, y_0, radius - (thickness), SH110X_BLACK);
+void draw_rectangle_S2(byte width, byte height, byte thickness, byte x_0 = 0, byte y_0 = 0) {
+  for (int i = 0; i < thickness; i++) {
+    display_2.drawRect(x_0 + i, y_0 + i, width - (2*i), height - (2*i), SSD1306_WHITE);
+  }
 }
 
 
-void draw_triangle(int x_0, int y_0, int x_1, int y_1, int x_2, int y_2, int thickness, int x = 0, int y = 0) {
-  display.fillTriangle(x_0 + x, y_0 + y, x_1 + x, y_1 + y, x_2 + x, y_2 + y, SH110X_WHITE);
-  display.fillTriangle(
+void draw_circle_S2(byte radius, byte thickness, byte x_0 = 0, byte y_0 = 0) {
+  display_2.fillCircle(x_0, y_0, radius, SSD1306_WHITE);
+  display_2.fillCircle(x_0, y_0, radius - (thickness), SSD1306_BLACK);
+}
+
+
+void draw_triangle_S2(int x_0, int y_0, int x_1, int y_1, int x_2, int y_2, int thickness, int x = 0, int y = 0) {
+  display_2.fillTriangle(x_0 + x, y_0 + y, x_1 + x, y_1 + y, x_2 + x, y_2 + y, SSD1306_WHITE);
+  display_2.fillTriangle(
     (x_0 + x + 2*thickness), (y_0 + y - thickness),
     (x_1 + x), (y_1 + y + 2*thickness),
     (x_2 + x - 2*thickness), (y_2 + y - thickness),
-    SH110X_BLACK);
+    SSD1306_BLACK);
 }
 
 
-void display_phase1(char word[], byte shape_index, byte n_batteries) {
+void display_phase_1(char word[], byte shape_index, byte n_batteries) {
   // Display configuration for the first stage of the module
   // (Before Pressing the button)
-
-  display2.clearDisplay();
-  display2.setTextSize(2);
-  display2.setTextColor(SH110X_WHITE);
-  display2.setCursor(0, 10);
-  display2.println(word);
-
-  display.clearDisplay();
+  
+  // Clear both displays
+  display_2.clearDisplay();
+  display_1.clearDisplay();
 
   // Button word
-  draw_rectangle(128, 24, 2);       // Rectangle enclosing the word
-  draw_centered_text(word, 2, 5);   // Draw the word in the display
-  draw_rectangle(65, 64 - 22, 2, 0, 22);    // Rectangle enclosing the shape
+  draw_centered_text_S1(word, 3, 10);   // Draw the word in the display
 
   // Shape information
-  draw_rectangle(65, 64 - 22, 2, 0, 22);    // Rectangle enclosing the shape
+  draw_rectangle_S2(65, 64, 2, 0, 0);    // Rectangle enclosing the shape
   switch (shape_index) {
   // Choose which shape to display based on the game setup
     case 0:
-      draw_triangle(6 - 15, 28, 6, 1, 6 + 15, 28, 4, 27, 28);        // Draw an empty triangle
+      draw_triangle_S2(6 - 15, 28, 6, 1, 6 + 15, 28, 4, 27, 28);        // Draw an empty triangle
       break;
     case 1:
-      display.fillTriangle(6 + (27 - 15), 56, 6 + 27, 29, 6 + (27 + 15), 56, SH110X_WHITE);    // Filled triangle
+      display_2.fillTriangle(6 + (27 - 15), 56, 6 + 27, 29, 6 + (27 + 15), 56, SSD1306_WHITE);    // Filled triangle
       break;
     case 2:
-      draw_circle(14, 4, 6 + 27, 28 + 15);                           // Draw an empty circle
+      draw_circle_S2(14, 4, 6 + 27, 28 + 15);                           // Draw an empty circle
       break;
     case 3:
-      display.fillCircle(6 + 27, 28 + 15, 14, SH110X_WHITE);         // Draw a filled circle
+      display_2.fillCircle(6 + 27, 28 + 15, 14, SSD1306_WHITE);         // Draw a filled circle
       break;
     case 4:
-      draw_rectangle(30, 30, 4, 6 + (54/2 - 15), 28);                // Draw an empty square
+      draw_rectangle_S2(30, 30, 4, 6 + (54/2 - 15), 28);                // Draw an empty square
       break;
     case 5:
-      display.fillRect(6 + (54/2 - 15), 28, 30, 30, SH110X_WHITE);   // Draw a filled square
+      display_2.fillRect(6 + (54/2 - 15), 28, 30, 30, SSD1306_WHITE);   // Draw a filled square
       break;
     default:
       Serial.println("The shape index is not between boundaries");
@@ -177,16 +159,18 @@ void display_phase1(char word[], byte shape_index, byte n_batteries) {
   }
 
   // Battery information
-  draw_rectangle(65, 64 - 22, 2, 63, 22);   // Rectangle enclosing the batteries
-  display.drawBitmap(69 + 2*(4 + 15), 28, small_battery, 15, 30, SH110X_WHITE);   // Display the first battery
+  draw_rectangle_S2(65, 64 , 2, 63, 0);   // Rectangle enclosing the batteries
+  display_2.drawBitmap(69 + 2*(4 + 15), 17, small_battery, 15, 30, SSD1306_WHITE);   // Display the first battery
   if (n_batteries > 1) {
-    display.drawBitmap(69 + (4 + 15), 28, small_battery, 15, 30, SH110X_WHITE);   // Display the second battery
+    display_2.drawBitmap(69 + (4 + 15), 17, small_battery, 15, 30, SSD1306_WHITE);   // Display the second battery
   }
   if (n_batteries > 2) {
-    display.drawBitmap(69, 28, small_battery, 15, 30, SH110X_WHITE);              // Display the third battery
+    display_2.drawBitmap(69, 17, small_battery, 15, 30, SSD1306_WHITE);              // Display the third battery
   }
 
-  display.display();
+  // Display the new information for both displays
+  display_1.display();
+  display_2.display();
 }
 
 
@@ -194,7 +178,7 @@ void display_hold_and_wait() {
   // Display configuration for the first stage of the module
   // (Before Pressing the button)
 
-  display.clearDisplay();
+  display_1.clearDisplay();
   char m_ones[1];
   char s_tens[1];
   char s_ones[1];
@@ -205,9 +189,9 @@ void display_hold_and_wait() {
   Serial.println(s_ones);
 
   // Button word
-  draw_centered_text(m_ones, 2, 3);   // Draw the minutes ones
-  draw_centered_text(s_tens, 2, 23);   // Draw the seconds tens
-  draw_centered_text(s_ones, 2, 43);   // Draw the seconds ones
+  draw_centered_text_S1(m_ones, 2, 3);   // Draw the minutes ones
+  draw_centered_text_S1(s_tens, 2, 23);   // Draw the seconds tens
+  draw_centered_text_S1(s_ones, 2, 43);   // Draw the seconds ones
 
   // BitMap Example
   // draw_rectangle(65, 64 - 22, 2, 63, 22);   // Rectangle enclosing the batteries
@@ -219,29 +203,29 @@ void display_hold_and_wait() {
   //   display.drawBitmap(69, 28, small_battery, 15, 30, SH110X_WHITE);              // Display the third battery
   // }
 
-  display.display();
+  display_1.display();
 }
 
 
 void display_strike() {
   // 
-  display.clearDisplay();
+  display_1.clearDisplay();
 
   // PLACE HOLDER FOR REAL STRIKE DISPLAY ************************************
-  display.drawBitmap(69 + 2*(4 + 15), 28, small_battery, 15, 30, SH110X_WHITE);   // Display the first battery
+  display_1.drawBitmap(69 + 2*(4 + 15), 28, small_battery, 15, 30, SSD1306_WHITE);   // Display the first battery
 
-  display.display();
+  display_1.display();
 }
 
 
 void display_solved_module() {
   // 
-  display.clearDisplay();
+  display_1.clearDisplay();
 
   // PLACE HOLDER FOR REAL SOLVED DISPLAY *********************
-  display.drawBitmap(3, 3, small_battery, 15, 30, SH110X_WHITE);   // Display the first battery
+  display_1.drawBitmap(3, 3, small_battery, 30, 60, SSD1306_WHITE);   // Display the first battery
   
-  display.display();
+  display_1.display();
 }
 
 
@@ -394,7 +378,7 @@ void hold_and_wait() {
 
 void setup() {
   Serial.begin(9600);
-  randomSeed(analogRead(5));
+  // randomSeed(analogRead(5));
 
   pinMode(STRIKE, OUTPUT);
   pinMode(SOLVED, OUTPUT);
@@ -403,22 +387,17 @@ void setup() {
   // Show image buffer on the display hardware.
   // Since the buffer is intialized with an Adafruit splashscreen
   // internally, this will display the splashscreen.
-  display.begin(SSD1306_SWITCHCAPVCC,  0x3D);
-  display.display();
+  display_1.begin(SSD1306_SWITCHCAPVCC,  0x3D);
+  display_2.begin(SSD1306_SWITCHCAPVCC,  0x3C);
   delay(1000);
-  display2.begin(SSD1306_SWITCHCAPVCC,  0x3C);
-  display2.display();
+  display_1.display();
+  display_2.display();
   delay(1000);
   Serial.println("Screen started");
 
   // Clear the buffer.
-  display.clearDisplay();
-  display2.clearDisplay();
-  display2.setTextSize(2);
-  display2.setTextColor(WHITE);
-  display2.setCursor(0,0);
-  display2.print("Display B");
-  display2.display();
+  display_1.clearDisplay();
+  display_2.clearDisplay();
 
   game_setup();
 
@@ -428,6 +407,7 @@ void setup() {
 }
 
 void loop() {
+  Serial.println("********* LOOP *****************");
   while (!module_solution) {
     button_pressed = false;
 
@@ -435,7 +415,7 @@ void loop() {
     turn_off_lights();
     game_leds(b_color);
     delay(500);
-    display_phase1(button_text[button_game_text], shape, num_batteries);
+    display_phase_1(button_text[button_game_text], shape, num_batteries);
 
     // While the button is not pressed
     while (!button_pressed) {
