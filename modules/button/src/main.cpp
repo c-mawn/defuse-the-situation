@@ -606,22 +606,22 @@ void hold_and_wait() {
     }
     else if (light_strip_color == 0) {
       // If the light strip is white
-      if (minutes_ones == 1 || seconds_tens == 1 || seconds_ones == 1) {
-        // And the timer has a 1 in any position.
-        module_solution = true;
-      }
-    }
-    else if (light_strip_color == 3) {
-      // If the light strip is yellow
       if (minutes_ones == 5 || seconds_tens == 5 || seconds_ones == 5) {
         // And the timer has a 5 in any position.
         module_solution = true;
       }
     }
+    else if (light_strip_color == 3) {
+      // If the light strip is yellow
+      if (minutes_ones == 1 || seconds_tens == 1 || seconds_ones == 1) {
+        // And the timer has a 1 in any position.
+        module_solution = true;
+      }
+    }
     else {
       // In any other case...
-      if (minutes_ones == 1 || seconds_tens == 1 || seconds_ones == 1) {
-        // ... if the timer has a 1 in any position.
+      if (minutes_ones == 5 || seconds_tens == 5 || seconds_ones == 5) {
+        // ... if the timer has a 5 in any position.
         module_solution = true;
       }
     }
