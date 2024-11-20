@@ -1,23 +1,31 @@
 #include <Arduino.h>
 #include <SPI.h>
+#include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
+#include <Adafruit_SSD1306.h>
 #include <Adafruit_NeoPixel.h>
 
 
 // Module definitions for communication with the main module.
-#define STRIKE        11    // Pin to indicate a strike in-game
-#define SOLVED        12    // Pin to indicate the module has been solved
+#define STRIKE        18    // Pin to indicate a strike in-game
+#define SOLVED        19    // Pin to indicate the module has been solved
 
-// Definitions for OLED display
-#define OLED_MOSI     10
-#define OLED_CLK      8
-#define OLED_DC       7
-#define OLED_CS       5
-#define OLED_RST      9
+// // Definitions for OLED display
+// #define OLED_MOSI     10
+// #define OLED_CLK      8
+// #define OLED_DC       7
+// #define OLED_CS       5
+// #define OLED_RST      9
 
-// Create the OLED display
-Adafruit_SH1106G display = Adafruit_SH1106G(128, 64, OLED_MOSI, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
+// Declaration for SSD1306 display connected using I2C
+#define OLED_RESET     -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SCREEN_ADDRESS 0x3C
+Adafruit_SSD1306 display(128, 64, &Wire, OLED_RESET);
+Adafruit_SSD1306 display2(128, 64, &Wire, OLED_RESET);
+
+// // Create the OLED display
+// Adafruit_SH1106G display = Adafruit_SH1106G(128, 64, OLED_MOSI, OLED_CLK, OLED_DC, OLED_RST, OLED_CS);
 
 
 // ***********  BITMAPS   ***********
@@ -30,7 +38,7 @@ const unsigned char small_battery [] PROGMEM = {
 };
 
 // Definitions for LED strip
-#define LED_STRIP_PIN     4
+#define LED_STRIP_PIN     17
 #define NUM_BUTTON_LEDS   2       // 3
 #define NUM_STRIP_LEDS    3       // 5
 #define NUM_LEDS          (NUM_BUTTON_LEDS + NUM_STRIP_LEDS)
@@ -38,7 +46,7 @@ const unsigned char small_battery [] PROGMEM = {
 Adafruit_NeoPixel module_leds = Adafruit_NeoPixel(NUM_LEDS, LED_STRIP_PIN, NEO_GRB + NEO_KHZ800);
 
 // Game definitions and variables
-#define MAIN_BUTTON       3
+#define MAIN_BUTTON       16
 
 bool module_solution = false;     // Variable to indicate if the module is solved
 byte minutes_ones;
@@ -48,7 +56,7 @@ unsigned long current_time;
 unsigned long last_action_time;
 bool button_pressed;
 
-const char button_text[4][9] = {"Detonate","Abort", "Hold", "Press"};
+char button_text[4][9] = {"Detonate","Abort", "Hold", "Press"};
 const uint32_t light_colors[6] = {
         module_leds.Color(M_BRIGHT, M_BRIGHT, M_BRIGHT),  // 0 - White   - Light Strip & Button
         module_leds.Color(M_BRIGHT, 0, 0),                // 1 - Red     - Light Strip & Button
@@ -88,6 +96,19 @@ void draw_centered_text(char display_text[], byte text_size, byte y_offset) {
 }
 
 
+void draw_centered_text2(char display_text[], byte text_size, byte y_offset) {
+  // Needs a clear display before the function, and a display after the function
+  display2.setTextSize(text_size);
+  display2.setTextColor(SH110X_WHITE);
+  int16_t  x1, y1;
+  uint16_t w, h;
+
+  display2.getTextBounds(display_text, 0, 0, &x1, &y1, &w, &h);
+  display2.setCursor((128/2)-(w/2), y_offset);
+  display2.println(display_text);
+}
+
+
 void draw_rectangle(byte width, byte height, byte thickness, byte x_0 = 0, byte y_0 = 0) {
   for (int i = 0; i < thickness; i++) {
     display.drawRect(x_0 + i, y_0 + i, width - (2*i), height - (2*i), SH110X_WHITE);
@@ -101,7 +122,7 @@ void draw_circle(byte radius, byte thickness, byte x_0 = 0, byte y_0 = 0) {
 }
 
 
-void draw_triangle(byte x_0, byte y_0,byte x_1, byte y_1, byte x_2, byte y_2, byte thickness, byte x = 0, byte y = 0) {
+void draw_triangle(int x_0, int y_0, int x_1, int y_1, int x_2, int y_2, int thickness, int x = 0, int y = 0) {
   display.fillTriangle(x_0 + x, y_0 + y, x_1 + x, y_1 + y, x_2 + x, y_2 + y, SH110X_WHITE);
   display.fillTriangle(
     (x_0 + x + 2*thickness), (y_0 + y - thickness),
@@ -114,6 +135,12 @@ void draw_triangle(byte x_0, byte y_0,byte x_1, byte y_1, byte x_2, byte y_2, by
 void display_phase1(char word[], byte shape_index, byte n_batteries) {
   // Display configuration for the first stage of the module
   // (Before Pressing the button)
+
+  display2.clearDisplay();
+  display2.setTextSize(2);
+  display2.setTextColor(SH110X_WHITE);
+  display2.setCursor(0, 10);
+  display2.println(word);
 
   display.clearDisplay();
 
@@ -163,14 +190,19 @@ void display_phase1(char word[], byte shape_index, byte n_batteries) {
 }
 
 
-void display_hold_and_wait(byte min_ones, byte sec_tens, byte sec_ones) {
+void display_hold_and_wait() {
   // Display configuration for the first stage of the module
   // (Before Pressing the button)
 
   display.clearDisplay();
-  char m_ones[1] = {min_ones + 48};
-  char s_tens[1] = {sec_tens + 48};
-  char s_ones[1] = {sec_ones + 48};
+  char m_ones[1];
+  char s_tens[1];
+  char s_ones[1];
+
+  Serial.print(m_ones);
+  Serial.print(" : ");
+  Serial.print(s_tens);
+  Serial.println(s_ones);
 
   // Button word
   draw_centered_text(m_ones, 2, 3);   // Draw the minutes ones
@@ -319,10 +351,10 @@ void hold_and_wait() {
   if (current_time >= last_action_time + 1000) {
     last_action_time = millis();
     minutes_ones = int(trunc((current_time/1000)/60)) % 10;
-    seconds_tens = int(trunc((int(trunc(current_time/1000)) % 60) / 10));
-    seconds_ones = (int(trunc(current_time/1000)) % 60) % 10;
+    seconds_tens = int(trunc(((int(trunc(current_time/1000))) % 60) / 10));
+    seconds_ones = ((int(trunc(current_time/1000))) % 60) % 10;
 
-    display_hold_and_wait(minutes_ones, seconds_tens, seconds_ones);
+    display_hold_and_wait();
   }
 
   if (digitalRead(MAIN_BUTTON) != LOW) {
@@ -371,13 +403,22 @@ void setup() {
   // Show image buffer on the display hardware.
   // Since the buffer is intialized with an Adafruit splashscreen
   // internally, this will display the splashscreen.
-  display.begin(0, true);
+  display.begin(SSD1306_SWITCHCAPVCC,  0x3D);
   display.display();
+  delay(1000);
+  display2.begin(SSD1306_SWITCHCAPVCC,  0x3C);
+  display2.display();
   delay(1000);
   Serial.println("Screen started");
 
   // Clear the buffer.
   display.clearDisplay();
+  display2.clearDisplay();
+  display2.setTextSize(2);
+  display2.setTextColor(WHITE);
+  display2.setCursor(0,0);
+  display2.print("Display B");
+  display2.display();
 
   game_setup();
 
@@ -405,12 +446,13 @@ void loop() {
 
         // Show the light strip and the counter screen if the soluton is to hold and wait.
         if (!game_solution) {
+          current_time = millis();
           last_action_time = millis();
           minutes_ones = int(trunc((current_time/1000)/60)) % 10;
-          seconds_tens = int(trunc((int(trunc(current_time/1000)) % 60) / 10));
-          seconds_ones = (int(trunc(current_time/1000)) % 60) % 10;
+          seconds_tens = int(trunc(((int(trunc(current_time/1000))) % 60) / 10));
+          seconds_ones = ((int(trunc(current_time/1000))) % 60) % 10;
         
-          display_hold_and_wait(minutes_ones, seconds_tens, seconds_ones);
+          display_hold_and_wait();
 
           turn_off_lights();
           game_leds(b_color, true, light_strip_color);
@@ -420,7 +462,6 @@ void loop() {
 
     // While the button is pressed
     while (button_pressed) {
-      Serial.println(light_strip_color);
       // Choose between hold and release, or hold and wait.
       if (game_solution) {
         hold_and_release();
@@ -440,7 +481,7 @@ void loop() {
       delay(500);
       digitalWrite(STRIKE, LOW);
       display_strike();
-      delay(2000);      // Wait 2 seconds to let the player lift their hands from the button.
+      delay(1000);      // Wait 1 second to let the player lift their hands from the button.
     }
   }
 
