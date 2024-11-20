@@ -281,7 +281,7 @@ const unsigned char* timer_bitmaps[10] = {
 Adafruit_NeoPixel module_leds = Adafruit_NeoPixel(NUM_LEDS, LED_STRIP_PIN, NEO_GRB + NEO_KHZ800);
 
 // Game definitions and variables
-#define MAIN_BUTTON       16
+#define MAIN_BUTTON       15
 
 bool module_solution = false;     // Variable to indicate if the module is solved
 byte minutes_ones;
@@ -437,11 +437,6 @@ void display_hold_and_wait() {
 
   display_1.clearDisplay();
 
-  Serial.print(minutes_ones);
-  Serial.print(" : ");
-  Serial.print(seconds_tens);
-  Serial.println(seconds_ones);
-
   // Draw pseudo-timer in screen
   // Draw the minutes ones
   draw_rectangle_S1(24 + 8, 24 + 8, 2, 14 - 4, 20 - 4);
@@ -565,7 +560,7 @@ void game_setup() {
 
 
 void hold_and_release() {
-  // 
+  
   last_action_time = millis();
   current_time = millis();
 
@@ -642,11 +637,9 @@ void setup() {
   // internally, this will display the splashscreen.
   display_1.begin(SSD1306_SWITCHCAPVCC,  0x3D);
   display_2.begin(SSD1306_SWITCHCAPVCC,  0x3C);
-  delay(1000);
   display_1.display();
   display_2.display();
   delay(1000);
-  Serial.println("Screen started");
 
   // Clear the buffer.
   display_1.clearDisplay();
@@ -656,11 +649,9 @@ void setup() {
 
   module_leds.begin();
   module_leds.show(); // Initialize all pixels to 'off'
-  Serial.println("LIGHTS STARTED ************");
 }
 
 void loop() {
-  Serial.println("********* LOOP *****************");
   while (!module_solution) {
     button_pressed = false;
 
@@ -672,7 +663,6 @@ void loop() {
 
     // While the button is not pressed
     while (!button_pressed) {
-      Serial.println(b_color);
       if (digitalRead(MAIN_BUTTON) == LOW) {
         // If the button is pressed, go to the next phase
         button_pressed = true;
@@ -707,14 +697,12 @@ void loop() {
     // If after releasing the button the module is not solved, add a strike.
     if (!module_solution) {
 
-      // ........... Add a screen for the strike to avoid confusion.
-
       Serial.println("********** STRIKE **************");
       digitalWrite(STRIKE, HIGH);
+      display_strike();
       delay(500);
       digitalWrite(STRIKE, LOW);
-      display_strike();
-      delay(1000);      // Wait 1 second to let the player lift their hands from the button.
+      delay(1500);      // Wait 2 seconds to let the player lift their hands from the button.
     }
   }
 
