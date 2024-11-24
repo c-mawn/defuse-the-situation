@@ -14,8 +14,8 @@
 #define LED_STRIP_PIN 7
 
 // Definitions for LED strip
-#define NUM_LEDS    10
-#define BRIGHTNESS  10
+#define NUM_LEDS    19
+#define BRIGHTNESS  30
 #define LED_TYPE    WS2812B
 CRGB memory_leds[NUM_LEDS];  //#define COLOR_ORDER GRB
 const int colors[][3] = {
@@ -210,14 +210,16 @@ void display_stage(int stage_base1) {
   int stage_base0 = stage_base1 - 1;            // Convert the stage into a base 0 index to use in arrays
 
   // Set display LED
-  memory_leds[0] = CRGB (
-    colors[display_values[stage_base0]][0],     // Assign to the LED the display color in the current stage
-    colors[display_values[stage_base0]][1],
-    colors[display_values[stage_base0]][2]);
+  for (int i = 0; i < 10; i++) {
+    memory_leds[i + 4] = CRGB (
+      colors[display_values[stage_base0]][0], // Assign to the LED the display color in the current stage
+      colors[display_values[stage_base0]][1],
+      colors[display_values[stage_base0]][2]);
+  }
 
   // Set button LEDs
   for (int i = 0; i < 4; i++) {
-    memory_leds[i + 1] = CRGB (
+    memory_leds[i] = CRGB (
       colors[button_values[stage_base0][i]][0], // Assign to the LED the button color in the current stage
       colors[button_values[stage_base0][i]][1],
       colors[button_values[stage_base0][i]][2]);
@@ -226,11 +228,11 @@ void display_stage(int stage_base1) {
   // Set stage counter LEDs
   for (int i = 1; i < stage_base1; i++) {
     // Assign to LEDs for the stage the color yellow (index 5 in the constant "colors")
-    memory_leds[i + 4] = CRGB (colors[5][0], colors[5][1], colors[5][2]);
+    memory_leds[i + 13] = CRGB (colors[5][0], colors[5][1], colors[5][2]);
   }
   for (int i = stage_base1; i <= 5; i++){
     // Turn off the rest of the LEDs for the not completed stages
-    memory_leds[i + 4] = CRGB::Black;
+    memory_leds[i + 13] = CRGB::Black;
   }
 
   // Display the stage
@@ -242,7 +244,7 @@ void display_final_stage() {
   // Displays the winning game status after completing the module
 
   // Change the display and button LEDs (0 to 4) to white showing the module is completed
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 14; i++) {
     // Index 0 in the constant colors has the RGB code for white
     memory_leds[i] = CRGB (colors[0][0], colors[0][1], colors[0][2]);
   }
@@ -250,7 +252,7 @@ void display_final_stage() {
   // Display all the stage LEDs in yellow to show completition of all modules
   for (int i = 1; i <= 5; i++) {
     // Index 5 in the constant colors has the RGB code for yellow
-    memory_leds[i + 4] = CRGB (colors[5][0], colors[5][1], colors[5][2]);
+    memory_leds[i + 13] = CRGB (colors[5][0], colors[5][1], colors[5][2]);
   }
 
   // Display the stage

@@ -273,11 +273,11 @@ const unsigned char* timer_bitmaps[10] = {
 
 
 // Definitions for LED strip
-#define LED_STRIP_PIN     17
-#define NUM_BUTTON_LEDS   2       // 3
-#define NUM_STRIP_LEDS    3       // 5
-#define NUM_LEDS          (NUM_BUTTON_LEDS + NUM_STRIP_LEDS)
-#define M_BRIGHT          5       // Maximum value for the LEDs to turn on (up to 255).
+#define LED_STRIP_PIN       17
+#define NUM_BUTTON_LEDS     4
+#define NUM_STRIP_LEDS      5
+#define NUM_LEDS            (NUM_BUTTON_LEDS + NUM_STRIP_LEDS)
+#define M_BRIGHT            50    // Maximum value for the LEDs to turn on (up to 255).
 Adafruit_NeoPixel module_leds = Adafruit_NeoPixel(NUM_LEDS, LED_STRIP_PIN, NEO_GRB + NEO_KHZ800);
 
 // Game definitions and variables
