@@ -7,11 +7,11 @@
 #define SOLVED 9    // Pin to indicate the module has been solved
 
 // Pin definitions for module output/input
-#define BUTTON_1 3
-#define BUTTON_2 4
-#define BUTTON_3 5
-#define BUTTON_4 6
-#define LED_STRIP_PIN 7
+#define BUTTON_1 4
+#define BUTTON_2 5
+#define BUTTON_3 6
+#define BUTTON_4 7
+#define LED_STRIP_PIN 3
 
 // Definitions for LED strip
 #define NUM_LEDS    19
