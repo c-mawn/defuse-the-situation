@@ -164,7 +164,7 @@ int readSwitches() {
 void cutWire(int wire) {
     switch (wire) {
     case 1:
-        for (int i=3; i>0; i--){
+        for (int i=3; i>=0; i--){
             leds[i] = CRGB::Black;
             FastLED.show();
             delay(40);
