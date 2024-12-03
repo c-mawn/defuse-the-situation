@@ -1,17 +1,68 @@
 #include <Arduino.h>
 #include <FastLED.h>
 
+// Button debounce code
+const uint8_t DEBOUNCE_DELAY = 10; // in milliseconds
+
+struct Button {
+    // state variables
+    uint8_t  pin;
+    bool     lastReading;
+    uint32_t lastDebounceTime;
+    uint16_t state;
+
+    // methods determining the logical state of the button
+    bool pressed()                { return state == 1; }
+    bool released()               { return state == 0xffff; }
+    bool held(uint16_t count = 0) { return state > 1 + count && state < 0xffff; }
+
+    // method for reading the physical state of the button
+    void read() {
+        // reads the voltage on the pin connected to the button
+        bool reading = digitalRead(pin);
+
+        // if the logic level has changed since the last reading,
+        // we reset the timer which counts down the necessary time
+        // beyond which we can consider that the bouncing effect
+        // has passed.
+        if (reading != lastReading) {
+            lastDebounceTime = millis();
+        }
+
+        // from the moment we're out of the bouncing phase
+        // the actual status of the button can be determined
+        if (millis() - lastDebounceTime > DEBOUNCE_DELAY) {
+            // don't forget that the read pin is pulled-up
+            bool pressed = reading == LOW;
+            if (pressed) {
+                     if (state  < 0xfffe) state++;
+                else if (state == 0xfffe) state = 2;
+            } else if (state) {
+                state = state == 0xffff ? 0 : 0xffff;
+            }
+        }
+
+        // finally, each new reading is saved
+        lastReading = reading;
+    }
+};
+
 
 // Module definitions for communication with the main module.
 #define STRIKE 8      // Pin to indicate a strike in-game
 #define SOLVED 9    // Pin to indicate the module has been solved
 
 // Pin definitions for module output/input
-#define BUTTON_1 4
-#define BUTTON_2 5
-#define BUTTON_3 6
-#define BUTTON_4 7
-#define LED_STRIP_PIN 3
+#define LED_STRIP_PIN   3
+#define BUTTON_1        4
+#define BUTTON_2        5
+#define BUTTON_3        6
+#define BUTTON_4        7
+
+Button button_n1      = { BUTTON_1, HIGH, 0, 0 };
+Button button_n2      = { BUTTON_2, HIGH, 0, 0 };
+Button button_n3      = { BUTTON_3, HIGH, 0, 0 };
+Button button_n4      = { BUTTON_4, HIGH, 0, 0 };
 
 // Definitions for LED strip
 #define NUM_LEDS    19
@@ -317,26 +368,48 @@ void loop() {
     
     bool button_pressed = false;
     while (!button_pressed) {
-      for (int button = 3; button <= 6; button++) {
-        if (digitalRead(button) == LOW) {
+      // Read all the buttons
+      button_n1.read();
+      button_n2.read();
+      button_n3.read();
+      button_n4.read();
 
-          // If the button pressed is correct, advance to the next stage
-          if ((button - 2) == stage_solutions[current_stage - 1][0]) {
-            current_stage += 1;
-            delay(500);
-          }
-          // Else, return to stage 1 and add a strike
-          else {
-            current_stage = 1;
-            digitalWrite(STRIKE, HIGH);
-            delay(500);
-            digitalWrite(STRIKE, LOW);
-          }
+      // Count how many buttons are pressed at the same time
+      byte button_presses = 0;
+      // Get the last button pressed
+      byte current_button = 0;
 
-          // Break the loop once the button has been pressed
-          button_pressed = true;
-          break;
-        };
+      // Check if a button is pressed
+      if (button_n1.pressed()) {
+        current_button = 1;
+        button_presses += 1;
+      }
+      if (button_n2.pressed()) {
+        current_button = 2;
+        button_presses += 1;
+      }
+      if (button_n3.pressed()) {
+        current_button = 3;
+        button_presses += 1;
+      }
+      if (button_n4.pressed()) {
+        current_button = 4;
+        button_presses += 1;
+      }
+      
+      // If only one button is pressed and it is the correct button, advance to the next stage
+      if (button_presses == 1 && current_button == stage_solutions[current_stage - 1][0]) {
+        current_stage += 1;
+        delay(500);
+        button_pressed = true;    // Break the loop once the button is pressed
+      }
+      // Else, If an incorrect button is pressed, or more than one button is pressed, return to stage 1 and add a strike.
+      else if (button_pressed) {
+        current_stage = 1;
+        digitalWrite(STRIKE, HIGH);
+        delay(500);
+        digitalWrite(STRIKE, LOW);
+        button_pressed = true;    // Break the loop once the button is pressed
       }
     }
 

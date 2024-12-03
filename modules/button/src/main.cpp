@@ -7,6 +7,53 @@
 #include <Adafruit_NeoPixel.h>
 
 
+// Button debounce code
+const uint8_t DEBOUNCE_DELAY = 20; // in milliseconds
+
+struct Button {
+    // state variables
+    uint8_t  pin;
+    bool     lastReading;
+    uint32_t lastDebounceTime;
+    uint16_t state;
+
+    // methods determining the logical state of the button
+    bool pressed()                { return state == 1; }
+    bool released()               { return state == 0xffff; }
+    bool held(uint16_t count = 0) { return state > 1 + count && state < 0xffff; }
+
+    // method for reading the physical state of the button
+    void read() {
+        // reads the voltage on the pin connected to the button
+        bool reading = digitalRead(pin);
+
+        // if the logic level has changed since the last reading,
+        // we reset the timer which counts down the necessary time
+        // beyond which we can consider that the bouncing effect
+        // has passed.
+        if (reading != lastReading) {
+            lastDebounceTime = millis();
+        }
+
+        // from the moment we're out of the bouncing phase
+        // the actual status of the button can be determined
+        if (millis() - lastDebounceTime > DEBOUNCE_DELAY) {
+            // The read pin is pulled-down
+            bool pressed = reading == HIGH;
+            if (pressed) {
+                     if (state  < 0xfffe) state++;
+                else if (state == 0xfffe) state = 2;
+            } else if (state) {
+                state = state == 0xffff ? 0 : 0xffff;
+            }
+        }
+
+        // finally, each new reading is saved
+        lastReading = reading;
+    }
+};
+
+
 // Module definitions for communication with the main module.
 #define STRIKE        18    // Pin to indicate a strike in-game
 #define SOLVED        19    // Pin to indicate the module has been solved
@@ -283,6 +330,7 @@ Adafruit_NeoPixel module_leds = Adafruit_NeoPixel(NUM_LEDS, LED_STRIP_PIN, NEO_G
 // Game definitions and variables
 #define MAIN_BUTTON       15
 
+Button the_button      = { MAIN_BUTTON, LOW, 0, 0 };
 bool module_solution = false;     // Variable to indicate if the module is solved
 byte minutes_ones;
 byte seconds_tens;
@@ -566,7 +614,7 @@ void hold_and_release() {
 
   while (current_time < last_action_time + 1000) {
     current_time = millis();
-    if (digitalRead(MAIN_BUTTON) != LOW) {
+    if (the_button.released()) {
       module_solution = true;
       break;
     }
@@ -589,7 +637,7 @@ void hold_and_wait() {
     display_hold_and_wait();
   }
 
-  if (digitalRead(MAIN_BUTTON) != LOW) {
+  if (the_button.released()) {
     button_pressed = false;
 
     if (light_strip_color == 2) {
@@ -630,7 +678,7 @@ void setup() {
 
   pinMode(STRIKE, OUTPUT);
   pinMode(SOLVED, OUTPUT);
-  pinMode(MAIN_BUTTON, INPUT_PULLUP);
+  pinMode(MAIN_BUTTON, INPUT);
 
   // Show image buffer on the display hardware.
   // Since the buffer is intialized with an Adafruit splashscreen
@@ -663,7 +711,9 @@ void loop() {
 
     // While the button is not pressed
     while (!button_pressed) {
-      if (digitalRead(MAIN_BUTTON) == LOW) {
+      the_button.read();
+      
+      if (the_button.pressed()) {
         // If the button is pressed, go to the next phase
         button_pressed = true;
 
