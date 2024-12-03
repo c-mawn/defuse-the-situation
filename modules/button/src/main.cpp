@@ -614,6 +614,7 @@ void hold_and_release() {
 
   while (current_time < last_action_time + 1000) {
     current_time = millis();
+    the_button.read();
     if (the_button.released()) {
       module_solution = true;
       break;
@@ -712,7 +713,7 @@ void loop() {
     // While the button is not pressed
     while (!button_pressed) {
       the_button.read();
-      
+
       if (the_button.pressed()) {
         // If the button is pressed, go to the next phase
         button_pressed = true;
@@ -735,6 +736,7 @@ void loop() {
 
     // While the button is pressed
     while (button_pressed) {
+      the_button.read();
       // Choose between hold and release, or hold and wait.
       if (game_solution) {
         hold_and_release();
@@ -752,7 +754,7 @@ void loop() {
       display_strike();
       delay(500);
       digitalWrite(STRIKE, LOW);
-      delay(1500);      // Wait 2 seconds to let the player lift their hands from the button.
+      delay(500);      // Wait 1 second to let the player lift their hands from the button.
     }
   }
 
