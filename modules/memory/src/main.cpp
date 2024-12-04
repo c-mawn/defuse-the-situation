@@ -363,6 +363,12 @@ void setup() {
 
 void loop() {
   while (!module_solution) {
+    // Read all the buttons
+    button_n1.read();
+    button_n2.read();
+    button_n3.read();
+    button_n4.read();
+    
     turn_off_lights();
     display_stage(current_stage);
     
@@ -404,7 +410,7 @@ void loop() {
         button_pressed = true;    // Break the loop once the button is pressed
       }
       // Else, If an incorrect button is pressed, or more than one button is pressed, return to stage 1 and add a strike.
-      else if (button_pressed) {
+      else if (button_presses) {
         current_stage = 1;
         digitalWrite(STRIKE, HIGH);
         delay(500);
