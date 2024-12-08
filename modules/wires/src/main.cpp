@@ -1,15 +1,15 @@
 #include <Arduino.h>
 #include <FastLED.h>
 
-#define SW1 12
-#define SW2 11
-#define SW3 10
+#define SW1 6
+#define SW2 7
+#define SW3 8
 #define SW4 9
-#define SW5 8
-#define SW6 7
-#define WIN_LED 6
-#define LOSE_LED 5
-#define LED_PIN     3
+#define SW5 10
+#define SW6 11
+#define WIN_LED 5
+#define LOSE_LED 4
+#define LED_PIN     12
 #define NUM_LEDS    24
 #define BRIGHTNESS  10
 #define LED_TYPE    WS2812B
