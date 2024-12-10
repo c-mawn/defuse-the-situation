@@ -42,6 +42,8 @@ const uint8_t STRIKE3 = 13;
 const unsigned long countdownTime = 100000; // 5 minutes in milliseconds
 unsigned long startTime;
 unsigned long elapsedTime;
+unsigned long current_time;
+unsigned long last_time;
 
 /*
  * Delay time for compensation in the electronics
@@ -157,17 +159,19 @@ void loop(){
   int sec1 = seconds / 10; // Tens place of seconds
   int sec2 = seconds % 10; // Ones place of seconds
 
-  
-  
-  // Print as four separate integers
-  //ledModule.setPatternAt(0, PATTERNS[0]);
-  ledModule.setPatternAt(1, PATTERNS[min2]);
-  ledModule.setPatternAt(2, PATTERNS[sec1]);
-  ledModule.setPatternAt(3, PATTERNS[sec2]);
-  //ledModule.setPatternAt(
-  ledModule.setBrightness(2);
-  ledModule.flush();
-  delay(1000); // Update every second
+  current_time = millis();
+
+  if (current_time >= last_time + 1000) {
+    last_time = current_time;
+    // Print as four separate integers
+    //ledModule.setPatternAt(0, PATTERNS[0]);
+    ledModule.setPatternAt(1, PATTERNS[min2]);
+    ledModule.setPatternAt(2, PATTERNS[sec1]);
+    ledModule.setPatternAt(3, PATTERNS[sec2]);
+    //ledModule.setPatternAt(
+    ledModule.setBrightness(2);
+    ledModule.flush();
+  }
 
   if(min1 + min2 + sec1 + sec2 == 0){
     explode();
