@@ -30,7 +30,8 @@ const uint8_t SOLVE_PIN_MEMORY = 3;
 const uint8_t SOLVE_PIN_WIRES = 4;
 const uint8_t SOLVE_PIN_MORSE = 5;
 const uint8_t SOLVE_PIN_KEYPAD = 6;
-const uint8_t STRIKE_PIN = 7;
+const uint8_t STRIKE_PIN = A1;
+const int STRIKE_THRESH = 100;
 const uint8_t STRIKE1 = 11;
 const uint8_t STRIKE2 = 12;
 const uint8_t STRIKE3 = 13;
@@ -71,7 +72,8 @@ const uint8_t PATTERNS[NUM_PATTERNS] = {
 
 // Full Game variables
 int strikes = 0;
-int prev_strike_state = LOW;
+int prev_strike_state = 0;
+int current_strike_state = 0;
 //int modules_solved = 0;
 
 void explode(){
@@ -106,6 +108,30 @@ void strike_led(){
   
 }
 
+void check_modules(){
+  if (analogRead(STRIKE_PIN) >= STRIKE_THRESH){
+    prev_strike_state = current_strike_state;
+    current_strike_state = 1;
+  }
+  else {
+    prev_strike_state = current_strike_state;
+    current_strike_state = 0;
+  }
+
+  // Check module status
+  if(digitalRead(SOLVE_PIN_BUTTON) == HIGH && digitalRead(SOLVE_PIN_KEYPAD) == HIGH && digitalRead(SOLVE_PIN_WIRES) == HIGH && digitalRead(SOLVE_PIN_MEMORY) == HIGH && digitalRead(SOLVE_PIN_MORSE) == HIGH){
+    Serial.println("solved");
+    defuse();
+  }
+
+  if(prev_strike_state == 0 && current_strike_state == 1){
+    Serial.print("Strike");
+    Serial.println(strikes);
+    strikes++;
+    strike_led();
+  }
+}
+
 void setup(){
   Serial.begin(9600);
   delay(1000); // gives time to start up
@@ -128,22 +154,10 @@ void setup(){
 }
 
 void loop(){
-
-  // Check module status
-  if(digitalRead(SOLVE_PIN_BUTTON) == HIGH && digitalRead(SOLVE_PIN_KEYPAD) == HIGH && digitalRead(SOLVE_PIN_WIRES) == HIGH && digitalRead(SOLVE_PIN_MEMORY) == HIGH && digitalRead(SOLVE_PIN_MORSE) == HIGH){
-    Serial.println("solved");
-    defuse();
-  }
-  if(prev_strike_state == LOW && digitalRead(STRIKE_PIN) == HIGH){
-    Serial.print("Strike");
-    Serial.println(strikes);
-    strikes++;
-    strike_led();
-    prev_strike_state = digitalRead(STRIKE_PIN);
-  }
-  else{
-    prev_strike_state = digitalRead(STRIKE_PIN);
-  }
+  
+  Serial.println(analogRead(STRIKE_PIN));
+  
+  check_modules();
   
   // Calculate elapsed time
   elapsedTime = millis() - startTime;
