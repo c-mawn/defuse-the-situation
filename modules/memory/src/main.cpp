@@ -413,7 +413,7 @@ void loop() {
       else if (button_presses) {
         current_stage = 1;
         digitalWrite(STRIKE, HIGH);
-        delay(500);
+        delay(1000);
         digitalWrite(STRIKE, LOW);
         button_pressed = true;    // Break the loop once the button is pressed
       }
