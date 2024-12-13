@@ -1,0 +1,29 @@
+# Site settings
+title: Defuse the Situation
+
+# Theme settings
+theme: jekyll-theme-minimal
+
+# YAML Front Matter settings
+yaml_front_matter: true
+
+nav:
+  - name: Home
+    link: /defuse-the-situation
+  - name: About
+    link: about
+    subitems:
+      - name: Mechanical
+        link: mechanical
+      - name: Electrical
+        link: electrical
+      - name: Software
+        link: software
+  - name: Bill of Materials
+    link: bom
+  - name: Design
+    link: design
+  - name: Process
+    link: process
+  - name: Team
+    link: team
