@@ -14,28 +14,30 @@
     }
 
     .dropdown {
-      position: relative;
+      position: relative; /* Keep this as relative */
     }
 
+    /* Dropdown content starts hidden */
     .dropdown-content {
-      display: none;
+      display: none; /* Hidden by default */
       list-style-type: none;
       padding-left: 20px;
       background-color: #f9f9f9;
       border: 1px solid #ddd;
-      position: absolute;
-      top: 100%;
-      left: 0;
+      margin-top: 5px; /* Optional: Add some spacing between parent and dropdown */
     }
 
-    .dropdown:hover .dropdown-content {
-      display: block;
-    }
-
+    /* Style dropdown items */
     .dropdown-content li {
       padding: 5px 10px;
     }
 
+    /* Show dropdown on hover */
+    .dropdown:hover .dropdown-content {
+      display: block; /* Display the dropdown */
+    }
+
+    /* Dropdown links */
     .dropdown-content li a {
       text-decoration: none;
       color: #333;
