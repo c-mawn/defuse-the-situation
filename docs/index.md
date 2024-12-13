@@ -1,3 +1,8 @@
+---
+title: Home
+layout: default
+filename: index.md
+--- 
 # Defuse the Situation
 ## PIE 2024
 ### Joshua, Alex, Daniel, Charlie
