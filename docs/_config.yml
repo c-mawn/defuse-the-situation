@@ -2,9 +2,7 @@
 title: Defuse the Situation
 
 # Theme settings
-remote_theme: pages-themes/leap-day@v0.2.0
-plugins:
-- jekyll-remote-theme
+theme: jekyll-theme-minimal
 
 # YAML Front Matter settings
 yaml_front_matter: true
