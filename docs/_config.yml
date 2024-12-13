@@ -12,9 +12,17 @@ nav:
     link: /defuse-the-situation
   - name: About
     link: about
+  - name: Mechanical
+    link: mechanical
+  - name: Electrical
+    link: electrical
+  - name: Software
+    link: software
   - name: Bill of Materials
     link: bom
   - name: Design
     link: design
   - name: Process
     link: process
+  - name: Team
+    link: team
