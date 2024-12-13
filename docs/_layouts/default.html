@@ -71,14 +71,5 @@
   <div class="content">
     {{ content }}
   </div>
-  <script>
-    document.querySelectorAll('.dropdown > a').forEach(item => {
-      item.addEventListener('click', (event) => {
-        event.preventDefault();
-        const dropdownContent = item.nextElementSibling;
-        dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
-      });
-    });
-  </script>
 </body>
 </html>
