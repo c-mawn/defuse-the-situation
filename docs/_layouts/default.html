@@ -24,8 +24,8 @@
       background-color: #f9f9f9;
       border: 1px solid #ddd;
       position: absolute;
-      top: 0;
-      left: 100%;
+      top: 100%;
+      left: 0;
     }
 
     .dropdown:hover .dropdown-content {
@@ -71,5 +71,14 @@
   <div class="content">
     {{ content }}
   </div>
+  <script>
+    document.querySelectorAll('.dropdown > a').forEach(item => {
+      item.addEventListener('click', (event) => {
+        event.preventDefault();
+        const dropdownContent = item.nextElementSibling;
+        dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+      });
+    });
+  </script>
 </body>
 </html>
