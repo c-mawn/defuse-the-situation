@@ -139,7 +139,8 @@ void find_solutions() {
   else if (display_values[1] == 2) {
     // If the display is 2, press the button in the same position as you pressed in stage 1.
     stage_solutions[1][0] = stage_solutions[0][0];
-    stage_solutions[1][1] = button_values[1][stage_solutions[0][0]];
+    stage_solutions[1][1] = button_values[1][stage_solutions[0][0] - 1];
+    // Decrease 1 for the button to get since they are in base 1 in stage_solutions
   }
   else if (display_values[1] == 3) {
     // If the display is 3, press the button in the first position.
@@ -149,7 +150,8 @@ void find_solutions() {
   else if (display_values[1] == 4) {
     // If the display is 4, press the button in the same position as you pressed in stage 1.
     stage_solutions[1][0] = stage_solutions[0][0];
-    stage_solutions[1][1] = button_values[1][stage_solutions[0][0]];
+    stage_solutions[1][1] = button_values[1][stage_solutions[0][0] - 1];
+    // Decrease 1 for the button to get since they are in base 1 in stage_solutions
   }
 
   // STAGE 3
@@ -178,7 +180,8 @@ void find_solutions() {
   if (display_values[3] == 1) {
     // If the display is 1, press the button in the same position as you pressed in stage 1.
     stage_solutions[3][0] = stage_solutions[1-1][0];
-    stage_solutions[3][1] = button_values[4-1][stage_solutions[1-1][0]];
+    stage_solutions[3][1] = button_values[4-1][stage_solutions[1-1][0] - 1];
+    // Decrease 1 for the button to get since they are in base 1 in stage_solutions
   }
   else if (display_values[3] == 2) {
     // If the display is 2, press the button in the first position.
@@ -188,12 +191,14 @@ void find_solutions() {
   else if (display_values[3] == 3) {
     // If the display is 3, press the button in the same position as you pressed in stage 2.
     stage_solutions[3][0] = stage_solutions[2-1][0];
-    stage_solutions[3][1] = button_values[4-1][stage_solutions[2-1][0]];
+    stage_solutions[3][1] = button_values[4-1][stage_solutions[2-1][0] - 1];
+    // Decrease 1 for the button to get since they are in base 1 in stage_solutions
   }
   else if (display_values[3] == 4) {
     // If the display is 4, press the button in the same position as you pressed in stage 2
     stage_solutions[3][0] = stage_solutions[2-1][0];
-    stage_solutions[3][1] = button_values[4-1][stage_solutions[2-1][0]];
+    stage_solutions[3][1] = button_values[4-1][stage_solutions[2-1][0] - 1];
+    // Decrease 1 for the button to get since they are in base 1 in stage_solutions
   }
 
   // STAGE 5
@@ -322,6 +327,64 @@ void setup() {
 
   initLights();
   initMemoryGame();
+
+  Serial.print("Testing: ");
+  Serial.print(stage_solutions[2-1][0]);
+  Serial.print(", ");
+  Serial.println(button_values[4-1][stage_solutions[2-1][0] - 1]);
+
+  Serial.print("Button Values. 1: (");
+  Serial.print(button_values[0][0]);
+  Serial.print(", ");
+  Serial.print(button_values[0][1]);
+  Serial.print(", ");
+  Serial.print(button_values[0][2]);
+  Serial.print(", ");
+  Serial.print(button_values[0][3]);
+  Serial.print(")");
+
+  Serial.print(" 2: (");
+  Serial.print(button_values[1][0]);
+  Serial.print(", ");
+  Serial.print(button_values[1][1]);
+  Serial.print(", ");
+  Serial.print(button_values[1][2]);
+  Serial.print(", ");
+  Serial.print(button_values[1][3]);
+  Serial.print(")");
+
+  Serial.print(" 3: (");
+  Serial.print(button_values[2][0]);
+  Serial.print(", ");
+  Serial.print(button_values[2][1]);
+  Serial.print(", ");
+  Serial.print(button_values[2][2]);
+  Serial.print(", ");
+  Serial.print(button_values[2][3]);
+  Serial.print(")");
+
+  Serial.print(" 4: (");
+  Serial.print(button_values[3][0]);
+  Serial.print(", ");
+  Serial.print(button_values[3][1]);
+  Serial.print(", ");
+  Serial.print(button_values[3][2]);
+  Serial.print(", ");
+  Serial.print(button_values[3][3]);
+  Serial.print(")");
+
+  Serial.print(" 5: (");
+  Serial.print(button_values[4][0]);
+  Serial.print(", ");
+  Serial.print(button_values[4][1]);
+  Serial.print(", ");
+  Serial.print(button_values[4][2]);
+  Serial.print(", ");
+  Serial.print(button_values[4][3]);
+  Serial.println(")");
+
+
+
 
   Serial.print("Display: ");
   Serial.print(display_values[0]);

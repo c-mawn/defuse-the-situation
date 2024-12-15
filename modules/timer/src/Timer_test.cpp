@@ -1,7 +1,7 @@
 /*
  * For the timer module, Connect Display pins: 
  CLK to A0
- DIO to 9
+ DIO to 10
  VCC to +5V
  GND to GND
  Button Solved to 2
@@ -23,7 +23,7 @@ using ace_segment::Tm1637Module;
  * Defining Pins for the timer
  */
 const uint8_t CLK_PIN = A0;
-const uint8_t DIO_PIN = 9;
+const uint8_t DIO_PIN = 10;
 const uint8_t NUM_DIGITS = 4;
 const uint8_t SOLVE_PIN_BUTTON = 2;
 const uint8_t SOLVE_PIN_MEMORY = 3;
@@ -40,7 +40,7 @@ const uint8_t STRIKE3 = 13;
 /*
  * Timer initalization values
  */
-const unsigned long countdownTime = 100000; // 5 minutes in milliseconds
+const unsigned long countdownTime = 300000; // 5 minutes in milliseconds
 unsigned long startTime;
 unsigned long elapsedTime;
 unsigned long current_time;
