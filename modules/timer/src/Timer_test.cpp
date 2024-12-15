@@ -31,10 +31,11 @@ const uint8_t SOLVE_PIN_WIRES = 4;
 const uint8_t SOLVE_PIN_MORSE = 5;
 const uint8_t SOLVE_PIN_KEYPAD = 6;
 const uint8_t STRIKE_PIN = A1;
-const int STRIKE_THRESH = 100;
+const int STRIKE_THRESH = 35;
 const uint8_t STRIKE1 = 11;
 const uint8_t STRIKE2 = 12;
 const uint8_t STRIKE3 = 13;
+const uint8_t BUZZER = 7;
 
 
 /*
@@ -82,6 +83,15 @@ void explode(){
   ledModule.setPatternAt(2, 0b01000000);
   ledModule.setPatternAt(3, 0b01000000);
   Serial.print("boom");
+  tone(BUZZER, 784);
+  delay(500);
+  tone(BUZZER, 740);
+  delay(500);
+  tone(BUZZER, 698);
+  delay(500);
+  tone(BUZZER, 659);
+  delay(1500);
+  noTone(BUZZER);
   while(true){}
 }
 
@@ -150,7 +160,8 @@ void setup(){
   pinMode(STRIKE1, OUTPUT);
   pinMode(STRIKE2, OUTPUT);
   pinMode(STRIKE3, OUTPUT);
-  
+
+  pinMode(BUZZER, OUTPUT);  
 }
 
 void loop(){
