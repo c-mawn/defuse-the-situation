@@ -21,8 +21,6 @@ nav:
         link: software
   - name: Bill of Materials
     link: bom
-  - name: Design
-    link: design
   - name: Process
     link: process
   - name: Team
