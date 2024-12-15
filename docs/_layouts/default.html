@@ -13,7 +13,9 @@
       position: fixed;
       top: 50px; /* Adjust to leave space for the navbar */
       left: 0;
-      height: calc(100% - 50px); /* Adjust height to account for navbar */
+      bottom: 0; /* Extend sidebar to the bottom of the page */
+      height: auto;
+      overflow-y: auto; /* Add scrolling if content overflows */
     }
 
     .dropdown {
