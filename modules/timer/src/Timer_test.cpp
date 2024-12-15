@@ -40,7 +40,7 @@ const uint8_t STRIKE3 = 13;
 /*
  * Timer initalization values
  */
-const unsigned long countdownTime = 100000; // 5 minutes in milliseconds
+const unsigned long countdownTime = 300000; // 5 minutes in milliseconds
 unsigned long startTime;
 unsigned long elapsedTime;
 unsigned long current_time;
