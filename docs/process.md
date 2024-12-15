@@ -2,7 +2,7 @@
 
 
 ## Data Energy Flow Diagram
-[Data Energy Flow Diagram](assets/DtS_Energy_Flow_Diagram.png)
+![Data Energy Flow Diagram](assets/DtS_Energy_Flow_Diagram.png)
 A few notes to make this diagram a little clearer:
 - There are only 2 users of the game, so all the users with scissors (defuser) are the same person.
 - The pink 'Human Perception' lines are meant to reprisent a flow of data that is aquired or transmitted through human perception. This differs from our normal green 'Data' lines because there are no mistakes in transmitting that data, whereas with a human perception line, mistakes can (and will) be made, which is an intentional design decision of our game.
