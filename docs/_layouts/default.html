@@ -4,13 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ page.title | escape }}</title>
-  <link rel="stylesheet" href="{{ '/assets/main.css' | relative_url }}">
   <style>
     /* Add styles for the dropdown */
     .sidebar {
       width: 200px;
       background-color: #f4f4f4;
       padding: 10px;
+      position: fixed;
+      top: 50px; /* Adjust to leave space for the navbar */
+      left: 0;
+      height: calc(100% - 50px); /* Adjust height to account for navbar */
     }
 
     .dropdown {
@@ -53,6 +56,11 @@
       color: white;
       padding: 10px 0;
       text-align: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
     }
 
     nav a {
@@ -64,13 +72,19 @@
     nav a:hover {
       text-decoration: underline;
     }
+
+    .content {
+      margin-top: 60px; /* Leave space for the navbar */
+      margin-left: 210px; /* Leave space for the sidebar */
+      padding: 20px;
+    }
   </style>
 </head>
 <body>
   <!-- Navigation Bar Section -->
   <nav>
     <a href="https://github.com/c-mawn/defuse-the-situation">GitHub</a>
-    <a href="docs/assets/Updated defuser's manual.pdf">Defuser Manual</a>
+    <a href="docs/assets/Updated defuser's manual.pdf">PDF Document</a>
   </nav>
 
   <!-- Sidebar Section -->
