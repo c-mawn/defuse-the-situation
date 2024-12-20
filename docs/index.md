@@ -16,7 +16,19 @@ We had a few goals in mind guiding us through the design of this game:
 - Maintain replayability, so that the same person can play the game multiple times without having the same experience.
 - Create a physical model that seamlessly integrated electrical and mechanical components, while still being aesthetically pleasing.
 - Keep the whole game contained to the suitcase, making it fully transportable.
-- Keep accessability in mind when designing, specifically for color-blind people. 
+- Keep accessibility in mind when designing, specifically for color-blind people. 
 
 ### See it in Action
-**TODO** Photos or videos of your final system in action.
+
+<iframe width="560" height="315" src="https://youtube.com/embed/LxuL0uiU1d4?si=1JZfxi9-RjvOo7vl" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+---
+
+<img src="assets/box_pic.jpg" alt="module" width="1000px">
+
+---
+
+<img src="assets/demo_day_pic.jpg" alt="module" width="1000px">
+
+
+

@@ -1,6 +1,11 @@
 # Bill of Materials
 
+<img src="assets/Bom_image.png" alt="BOM Images" width="1000px">
 
-- An account of how you spent your $250 budget
-    - You must include all components and materials and their estimated costs (even if you obtained them for free somehow).
-    - Please note where something was obtained for free and the cost is just your best estimate.
+
+For access to the links, please visit the spreadsheet, linked below. 
+
+[Link to spreadsheet](https://docs.google.com/spreadsheets/d/16pAkvdIEuZI9KOWwS6YC9QiNsgYV_jeBzQceWt5ZfvQ/edit?usp=sharing)
+
+
+    

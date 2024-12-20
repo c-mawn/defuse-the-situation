@@ -1,3 +1,12 @@
-# ectrical shtuff
+# Electrical
 
-- A detailed description of electrical design (whether you have circuit diagrams or not) and any necessary analysis.
+## General
+
+## Modules
+
+### Timer
+### Wires
+### Morse Code
+### Memory
+### Keypad
+### Button
