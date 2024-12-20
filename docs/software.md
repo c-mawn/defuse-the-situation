@@ -336,7 +336,7 @@ Lastly, the switches are simply read to check which wire the user cut. If it’s
 ### Memory
 
 *Libraries*
-- [FastLED] (https://github.com/FastLED/FastLED)
+- [FastLED](https://github.com/FastLED/FastLED)
 
 **Firmware**
 
