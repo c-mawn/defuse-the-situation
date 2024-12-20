@@ -77,7 +77,7 @@ Our project was split into 3 2-week long sprints. Here is a description of what 
 
 <img src="assets/module_model.jpg" alt="module" width="1000px">
 <div style="text-align: center;">
-    <img src="assets/module_top.jpg" alt="Module" style="transform: rotate(270deg); max-width: 100%; height: auto; display: block; margin: 0 auto;">
+    <img src="assets/module_top.jpg" alt="Module" style="transform: rotate(270deg); max-width: 70%; height: auto; display: block; margin: 0 auto;">
 </div>
 
 ---
