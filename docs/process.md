@@ -28,26 +28,32 @@ Our project was split into 3 2-week long sprints. Here is a description of what 
 - Initial module dimension sketches
 ---
 
-<div style="display: inline-block; width: 32%">
-    <img src="assets/sketch_box_1.png" alt="Sketch Box">
+<div style="display: flex; justify-content: space-between;">
+    <div style="width: 32%;">
+        <img src="assets/sketch_box_1.png" alt="Sketch Box" style="width: 100%; display: block;">
+    </div>
+    <div style="width: 32%;">
+        <img src="assets/sketch_box_2.png" alt="Sketch Box" style="width: 100%; display: block;">
+    </div>
+    <div style="width: 32%;">
+        <img src="assets/sketch_box_3.png" alt="Sketch Box" style="width: 100%; display: block;">
+    </div>
 </div>
-<div style="display: inline-block; width: 32%">
-    <img src="assets/sketch_box_2.png" alt="Sketch Box">
-</div>
-<div style="display: inline-block; width: 32%">
-    <img src="assets/sketch_box_3.png" alt="Sketch Box">
-</div>
+
 
 ---
 ### Sprint 2: Continued Iteration + Progress
 - Developed memory, keypad, button
 
-<div style="display: inline-block; width: 49%">
-    <img src="assets/keypad_2.jpg" alt="module">
+<div style="display: flex; justify-content: space-between;">
+    <div style="width: 49%;">
+        <img src="assets/keypad_2.jpg" alt="Module" style="width: 100%; display: block;">
+    </div>
+    <div style="width: 49%;">
+        <img src="assets/2_display.jpg" alt="Module" style="width: 100%; display: block;">
+    </div>
 </div>
-<div style="display: inline-block; width: 49%">
-    <img src="assets/2_display.jpg" alt="Module">
-</div>
+
 <img src="assets/wires_led.png" alt="Module" width="1000px">
 
 ---
@@ -70,7 +76,9 @@ Our project was split into 3 2-week long sprints. Here is a description of what 
 ---
 
 <img src="assets/module_model.jpg" alt="module" width="1000px">
-<img src="assets/module_top.jpg" alt="Module" width="1000px" style="transform: rotate(270deg);">
+<div style="text-align: center;">
+    <img src="assets/module_top.jpg" alt="Module" style="transform: rotate(270deg); max-width: 100%; height: auto; display: block; margin: 0 auto;">
+</div>
 
 ---
 
