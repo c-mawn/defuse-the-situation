@@ -24,11 +24,23 @@ We had a few goals in mind guiding us through the design of this game:
 
 ---
 
-<img src="assets/box_pic.jpg" alt="module" width="1000px">
+<img src="assets/box_pic.jpg" alt="image" width="1000px">
 
 ---
 
-<img src="assets/demo_day_pic.jpg" alt="module" width="1000px">
+<img src="assets/demo_day_pic.jpg" alt="image" width="1000px">
+
+---
+
+<img src="assets/demo_day_pic_2.jpg" alt="image" width="1000px">
+
+---
+
+<img src="assets/demo_day_pic_3.jpg" alt="image" width="1000px">
+
+---
+
+<img src="assets/demo_day_pic_4.jpg" alt="image" width="1000px">
 
 
 
